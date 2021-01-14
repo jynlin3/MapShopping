@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:developer' as developer;
 
 void main() {
   runApp(MyApp());
@@ -51,12 +53,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
+  PageController _pageController;
 
-  final tabs = [
-    Center(child: Text('Home')),
-    Center(child: Text('Settings')),
-    Center(child: Text('Navigation Map')),
-  ];
+  GoogleMapController _mapController;
+  final LatLng _center = const LatLng(45.521563, -122.677433);
+
+  @override
+  void initState(){
+    super.initState();
+    this._pageController = PageController();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +78,27 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: tabs[_currentIndex],
+      body: PageView(
+        children: <Widget>[
+          Center(child: Text('Home')),
+          Center(child: Text("Settings")),
+          GoogleMap(
+            onMapCreated: (controller){
+              this._mapController = controller;
+            },
+            initialCameraPosition: CameraPosition(
+              target: _center,
+              zoom: 11.0,
+            ),
+          )
+        ],
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            this._currentIndex = index;
+          });
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         items: [
@@ -93,9 +119,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
         onTap: (index) {
-          setState((){
-            _currentIndex = index;
-          });
+          // developer.log('on Tap: $index');
+          this._pageController.animateToPage(index,
+              duration: Duration(milliseconds: 1),
+              curve: Curves.easeIn);
         }
       ),
     );
