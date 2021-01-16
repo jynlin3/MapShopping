@@ -64,10 +64,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Geolocator _geolocator = Geolocator();
   Set<Marker> _markers = {};
 
+  List _items = List();
+  String _input;
+
   @override
   void initState(){
     super.initState();
     this._pageController = PageController();
+
+    this._items.add("item1");
+    this._items.add("item2");
+    this._items.add("item3");
   }
 
   @override
@@ -82,12 +89,32 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text("Map Shopping"),
       ),
       body: PageView(
         children: <Widget>[
-          Center(child: Text('Home')),
+          // home page
+          ListView.builder(
+              itemCount: this._items.length,
+              itemBuilder: (BuildContext context, int index){
+                return Container(
+                  key: Key(_items[index]),
+                  child: Card(child: ListTile(
+                    title: Text(_items[index]),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          this._items.removeAt(index);
+                        });
+                      },
+                    ),
+                  ))
+                );
+              }
+          ),
           Center(child: Text("Settings")),
+          // navigation map page
           GoogleMap(
             onMapCreated: (controller){
               this._mapController = controller;
@@ -135,6 +162,37 @@ class _MyHomePageState extends State<MyHomePage> {
               curve: Curves.easeIn);
         }
       ),
+      floatingActionButton: _currentIndex == 0 ? FloatingActionButton(
+        onPressed: () {
+          _input = "";
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text("Add Shopping Item"),
+                content: TextField(
+                  onChanged: (String value){
+                    _input = value;
+                  },
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                      onPressed: () {
+                        if(this._input.isEmpty)
+                          return;
+                        setState(() {
+                          this._items.add(_input);
+                        });
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                      child: Text("Add")
+                  )
+                ],
+              );
+            });
+        },
+        child: Icon(Icons.add, color: Colors.white),
+      ) : null,
     );
   }
 
