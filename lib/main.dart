@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:developer' as developer;
 
@@ -58,6 +61,9 @@ class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController _mapController;
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
+  Geolocator _geolocator = Geolocator();
+  Set<Marker> _markers = {};
+
   @override
   void initState(){
     super.initState();
@@ -85,11 +91,16 @@ class _MyHomePageState extends State<MyHomePage> {
           GoogleMap(
             onMapCreated: (controller){
               this._mapController = controller;
+              _checkLocationPermission().then((status){
+                debugPrint('----- Geolocation Status: ${status}');
+              });
+              _animateToUser();
             },
             initialCameraPosition: CameraPosition(
               target: _center,
               zoom: 11.0,
             ),
+            markers: _markers,
           )
         ],
         controller: _pageController,
@@ -119,12 +130,41 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
         onTap: (index) {
-          // developer.log('on Tap: $index');
           this._pageController.animateToPage(index,
               duration: Duration(milliseconds: 1),
               curve: Curves.easeIn);
         }
       ),
     );
+  }
+
+  Future<GeolocationStatus> _checkLocationPermission() async {
+    GeolocationStatus geolocationStatus = await Geolocator().checkGeolocationPermissionStatus();
+    return geolocationStatus;
+  }
+
+  _animateToUser() async {
+    var currentPos;
+    try {
+      currentPos = await this._geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      debugPrint('----- userLocation: ${currentPos}');
+    } catch(e) {
+      return;
+    }
+
+    setState((){
+      this._markers.add(Marker(
+        markerId: MarkerId('userLocation'),
+        position: LatLng(currentPos.latitude, currentPos.longitude),
+        icon: BitmapDescriptor.defaultMarker,
+        infoWindow: InfoWindow(title: 'Your Location')
+      ));
+    });
+
+    this._mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+      target: LatLng(currentPos.latitude, currentPos.longitude),
+      zoom: 17.0,
+    )));
   }
 }
