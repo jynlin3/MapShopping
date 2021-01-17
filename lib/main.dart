@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:developer' as developer;
+
+import 'database_helper.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,17 +65,15 @@ class _MyHomePageState extends State<MyHomePage> {
   Geolocator _geolocator = Geolocator();
   Set<Marker> _markers = {};
 
-  List _items = List();
+  List<Item> _items = [];
   String _input;
+  final _dbHelper = DatabaseHelper.instance;
 
   @override
   void initState(){
     super.initState();
     this._pageController = PageController();
-
-    this._items.add("item1");
-    this._items.add("item2");
-    this._items.add("item3");
+    setupList();
   }
 
   @override
@@ -98,21 +97,19 @@ class _MyHomePageState extends State<MyHomePage> {
               itemCount: this._items.length,
               itemBuilder: (BuildContext context, int index){
                 return Container(
-                  key: Key(_items[index]),
+                  key: Key(this._items[index].title),
                   child: Card(child: ListTile(
-                    title: Text(_items[index]),
+                    title: Text(this._items[index].title),
                     trailing: IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
-                        setState(() {
-                          this._items.removeAt(index);
-                        });
+                        onPressDelete(this._items[index]);
                       },
                     ),
                   ))
                 );
               }
-          ),
+            ),
           Center(child: Text("Settings")),
           // navigation map page
           GoogleMap(
@@ -177,14 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 actions: <Widget>[
                   FlatButton(
-                      onPressed: () {
-                        if(this._input.isEmpty)
-                          return;
-                        setState(() {
-                          this._items.add(_input);
-                        });
-                        Navigator.of(context, rootNavigator: true).pop();
-                      },
+                      onPressed: onPressAdd,
                       child: Text("Add")
                   )
                 ],
@@ -224,5 +214,43 @@ class _MyHomePageState extends State<MyHomePage> {
       target: LatLng(currentPos.latitude, currentPos.longitude),
       zoom: 17.0,
     )));
+  }
+
+  void setupList() async{
+    var items = await this._dbHelper.getAllItems();
+    setState(() {
+      _items = items;
+    });
+  }
+
+  void onPressDelete(Item item) async{
+    var id = await this._dbHelper.updateItem(Item(
+        id: item.id,
+        title: item.title,
+        isDeleted: true
+    ));
+    print("update row id: $id");
+
+    this._dbHelper.getAllItems().then((items){
+      setState(() {
+        _items = items;
+      });
+    });
+  }
+
+  void onPressAdd() async{
+    if(this._input.isEmpty)
+      return;
+
+    final id = await this._dbHelper.insertItem(Item.random(_input, false));
+    print('inserted row id: $id');
+
+    this._dbHelper.getAllItems().then((items){
+      setState(() {
+        _items = items;
+      });
+    });
+
+    Navigator.of(context, rootNavigator: true).pop();
   }
 }
