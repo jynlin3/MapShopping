@@ -82,7 +82,6 @@ class DatabaseHelper {
     Database db = await instance.database;
     final sql = "SELECT * FROM $itemTable WHERE $columnIsDeleted == 0";
     final List<Map<String, dynamic>> maps = await db.rawQuery(sql);
-    // final List<Map<String, dynamic>> maps = await db.query(itemTable);
     return List.generate(maps.length, (i){
       return Item.fromDB(maps[i]);
     });

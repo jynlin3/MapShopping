@@ -106,6 +106,30 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressDelete(this._items[index]);
                       },
                     ),
+                    onTap: (){
+                      _input = this._items[index].title;
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Edit Shopping Item"),
+                              content: TextField(
+                                controller: TextEditingController(text: _input),
+                                onChanged: (String value){
+                                  _input = value;
+                                },
+                              ),
+                              actions: <Widget>[
+                                FlatButton(
+                                    onPressed: (){
+                                      onPressEdit(this._items[index]);
+                                    },
+                                    child: Text("Edit")
+                                )
+                              ],
+                            );
+                          });
+                    },
                   ))
                 );
               }
@@ -244,6 +268,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final id = await this._dbHelper.insertItem(Item.random(_input, false));
     print('inserted row id: $id');
+
+    this._dbHelper.getAllItems().then((items){
+      setState(() {
+        _items = items;
+      });
+    });
+
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  void onPressEdit(Item item) async{
+    var id = await this._dbHelper.updateItem(Item(
+        id: item.id,
+        title: this._input,
+        isDeleted: false
+    ));
+    print("update row id: $id");
 
     this._dbHelper.getAllItems().then((items){
       setState(() {
