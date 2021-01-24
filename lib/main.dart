@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'database_helper.dart';
 
@@ -69,6 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String _input;
   final _dbHelper = DatabaseHelper.instance;
 
+  final Completer<WebViewController> _controller = Completer<WebViewController>();
+
   @override
   void initState(){
     super.initState();
@@ -134,7 +137,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               }
             ),
-          Center(child: Text("Settings")),
+          // settings page
+          WebView(
+            initialUrl: "https://www.safeway.com/shop/search-results.html?q=milk&sort=price",
+            javascriptMode: JavascriptMode.unrestricted,
+            onWebViewCreated: (WebViewController controller){
+              this._controller.complete(controller);
+            },
+          ),
           // navigation map page
           GoogleMap(
             onMapCreated: (controller){
