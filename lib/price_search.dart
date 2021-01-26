@@ -37,7 +37,7 @@ class _PriceSearchState extends State<PriceSearch> {
               child: SizedBox(
                   height: 1,
                   child: WebViewPlus(
-                    initialUrl: "https://www.safeway.com/shop/search-results.html?q=milk&sort=price",
+                    initialUrl: SafewayParser.getURL(args.title),
                     javascriptMode: JavascriptMode.unrestricted,
                     onWebViewCreated: (controller){
                       this._controller = controller;
