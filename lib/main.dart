@@ -8,6 +8,7 @@ import 'package:html/parser.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'database_helper.dart';
+import 'price_search.dart';
 import 'safeway_parser.dart';
 
 void main() {
@@ -36,7 +37,11 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      initialRoute: '/home',
+      routes: {
+        '/home': (context) => MyHomePage(title: 'Flutter Demo Home Page'),
+        PriceSearch.routeName: (context) => PriceSearch(),
+      },
     );
   }
 }
@@ -104,39 +109,47 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (BuildContext context, int index){
                 return Container(
                   key: Key(this._items[index].title),
-                  child: Card(child: ListTile(
-                    title: Text(this._items[index].title),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        onPressDelete(this._items[index]);
-                      },
-                    ),
-                    onTap: (){
-                      _input = this._items[index].title;
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text("Edit Shopping Item"),
-                              content: TextField(
-                                controller: TextEditingController(text: _input),
-                                onChanged: (String value){
-                                  _input = value;
-                                },
+                  child: Card(
+                      child: ListTile(
+                        title: Text(this._items[index].title),
+                        trailing: Row(
+                            children: <Widget>[
+                              IconButton(
+                                  icon: Icon(Icons.search),
+                                  onPressed: () {Navigator.pushNamed(
+                                    context,
+                                    PriceSearch.routeName,
+                                    arguments: ScreenArguments(this._items[index].title),
+                                  );}
                               ),
-                              actions: <Widget>[
-                                FlatButton(
-                                    onPressed: (){
-                                      onPressEdit(this._items[index]);
-                                    },
-                                    child: Text("Edit")
-                                )
-                              ],
-                            );
-                          });
-                    },
-                  ))
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {onPressDelete(this._items[index]);},
+                              ),
+                            ],
+                            mainAxisSize:  MainAxisSize.min
+                        ),
+                        onTap: (){
+                          _input = this._items[index].title;
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text("Edit Shopping Item"),
+                                  content: TextField(
+                                    controller: TextEditingController(text: _input),
+                                    onChanged: (String value){_input = value;},
+                                  ),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                        onPressed: (){onPressEdit(this._items[index]);},
+                                        child: Text("Edit")
+                                    )
+                                  ],
+                                );
+                              });
+                        },
+                      ))
                 );
               }
             ),
