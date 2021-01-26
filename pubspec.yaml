@@ -32,8 +32,8 @@ dependencies:
   geolocator: ^3.0.1
   sqflite: ^1.1.0
   path: ^1.7.0
-  webview_flutter: ^1.0.7
   html: ^0.14.0+4
+  webview_flutter_plus: ^0.1.1+10
 
 dev_dependencies:
   flutter_test:

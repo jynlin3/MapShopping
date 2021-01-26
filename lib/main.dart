@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:html/parser.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import 'database_helper.dart';
 import 'price_search.dart';
-import 'safeway_parser.dart';
 
 void main() {
   runApp(MyApp());
@@ -77,8 +73,6 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Item> _items = [];
   String _input;
   final _dbHelper = DatabaseHelper.instance;
-
-  WebViewController _controller;
 
   @override
   void initState(){
@@ -154,17 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             ),
           // settings page
-          WebView(
-            initialUrl: "https://www.safeway.com/shop/search-results.html?q=milk&sort=price",
-            javascriptMode: JavascriptMode.unrestricted,
-            onWebViewCreated: (WebViewController controller){
-              this._controller = controller;
-            },
-            onPageFinished: (String url){
-              print("Page loaded: $url");
-              fetchData();
-            },
-          ),
+          Center(child: Text("Settings")),
           // navigation map page
           GoogleMap(
             onMapCreated: (controller){
@@ -323,16 +307,5 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     Navigator.of(context, rootNavigator: true).pop();
-  }
-
-  void fetchData() async {
-    String docu = await this._controller.evaluateJavascript('document.documentElement.innerHTML');
-    var html = json.decode(docu);
-    var dom = parse(html);
-
-    var products = SafewayParser.collectProducts(dom);
-    for(var p in products){
-      print("${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}");
-    }
   }
 }
