@@ -50,11 +50,11 @@ class _PriceSearchState extends State<PriceSearch> {
                       this._controller = controller;
                     },
                     onPageFinished: (url){
-                      print("Page loaded: $url");
+                      print('Page loaded: $url');
                       fetchSafewayData();
                     },
               ))),
-          Text("price search page"),
+          Text('price search page'),
           Expanded(
               child: ListView.builder(
                     itemCount: this._products.length,
@@ -80,7 +80,7 @@ class _PriceSearchState extends State<PriceSearch> {
 
     var products = SafewayParser.collectProducts(dom);
     for(var p in products){
-      print("${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}");
+      print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
     }
 
     setState(() {
@@ -93,7 +93,7 @@ class _PriceSearchState extends State<PriceSearch> {
       var kroger = KrogerParser();
       var products = await kroger.fetch(_title);
       for (var p in products) {
-        print("${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}");
+        print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
       }
       setState(() {
         _products.addAll(products);

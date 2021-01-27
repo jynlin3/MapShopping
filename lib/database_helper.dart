@@ -35,7 +35,7 @@ class Item {
 }
 
 class DatabaseHelper {
-  static final _databaseName = "MapShopping.db";
+  static final _databaseName = 'MapShopping.db';
   static final _databaseVersion = 1;
 
   static const itemTable = 'item';
@@ -70,7 +70,7 @@ class DatabaseHelper {
         $columnTitle TEXT, 
         $columnIsDeleted INTEGER)
     ''');
-    print("Database was created!");
+    print('Database was created!');
   }
 
   Future<int> insertItem(Item item) async{
@@ -80,7 +80,7 @@ class DatabaseHelper {
 
   Future<List<Item>> getAllItems() async {
     Database db = await instance.database;
-    final sql = "SELECT * FROM $itemTable WHERE $columnIsDeleted == 0";
+    final sql = 'SELECT * FROM $itemTable WHERE $columnIsDeleted == 0';
     final List<Map<String, dynamic>> maps = await db.rawQuery(sql);
     return List.generate(maps.length, (i){
       return Item.fromDB(maps[i]);
@@ -92,7 +92,7 @@ class DatabaseHelper {
     return db.update(
       itemTable,
       item.toMap(),
-      where: "id = ?",
+      where: 'id = ?',
       whereArgs: [item.id],
     );
   }
@@ -101,7 +101,7 @@ class DatabaseHelper {
     Database db = await instance.database;
     await db.delete(
         itemTable,
-        where: "id = ?",
+        where: 'id = ?',
         whereArgs: [id]
     );
   }

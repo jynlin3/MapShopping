@@ -93,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text("Map Shopping"),
+        title: Text('Map Shopping'),
       ),
       body: PageView(
         children: <Widget>[
@@ -129,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: Text("Edit Shopping Item"),
+                                  title: Text('Edit Shopping Item'),
                                   content: TextField(
                                     controller: TextEditingController(text: _input),
                                     onChanged: (String value){_input = value;},
@@ -137,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   actions: <Widget>[
                                     FlatButton(
                                         onPressed: (){onPressEdit(this._items[index]);},
-                                        child: Text("Edit")
+                                        child: Text('Edit')
                                     )
                                   ],
                                 );
@@ -148,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             ),
           // settings page
-          Center(child: Text("Settings")),
+          Center(child: Text('Settings')),
           // navigation map page
           GoogleMap(
             onMapCreated: (controller){
@@ -177,17 +177,17 @@ class _MyHomePageState extends State<MyHomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: "Home",
+            label: 'Home',
             backgroundColor: Colors.blue
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.settings),
-              label: "Settings",
+              label: 'Settings',
               backgroundColor: Colors.blue
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.navigation),
-              label: "Navigation Map",
+              label: 'Navigation Map',
               backgroundColor: Colors.blue
           ),
         ],
@@ -199,12 +199,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: _currentIndex == 0 ? FloatingActionButton(
         onPressed: () {
-          _input = "";
+          _input = '';
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text("Add Shopping Item"),
+                title: Text('Add Shopping Item'),
                 content: TextField(
                   onChanged: (String value){
                     _input = value;
@@ -213,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 actions: <Widget>[
                   FlatButton(
                       onPressed: onPressAdd,
-                      child: Text("Add")
+                      child: Text('Add')
                   )
                 ],
               );
@@ -267,7 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: item.title,
         isDeleted: true
     ));
-    print("update row id: $id");
+    print('update row id: $id');
 
     this._dbHelper.getAllItems().then((items){
       setState(() {
@@ -298,7 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: this._input,
         isDeleted: false
     ));
-    print("update row id: $id");
+    print('update row id: $id');
 
     this._dbHelper.getAllItems().then((items){
       setState(() {

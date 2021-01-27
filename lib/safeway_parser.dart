@@ -6,7 +6,7 @@ class SafewayParser {
   static String _urlBase = 'https://www.safeway.com/shop/search-results.html';
 
   static String getURL(String searchTerm){
-    return _urlBase + "?q=" + searchTerm + "&sort=price";
+    return _urlBase + '?q=' + searchTerm + '&sort=price';
   }
 
   static String _findName(DOM.Element productDiv){
@@ -15,12 +15,12 @@ class SafewayParser {
   
   static double _findPrice(DOM.Element productDiv){
     var strPrice = productDiv.querySelector('span.product-price').innerHtml;
-    var words = strPrice.split(" ");
+    var words = strPrice.split(' ');
 
     double price = 0;
     for (var w in words) {
-      if (w.startsWith("\$")){
-        price = double.parse(w.split("\$")[1]);
+      if (w.startsWith('\$')){
+        price = double.parse(w.split('\$')[1]);
         break;
       }
     }
@@ -32,15 +32,15 @@ class SafewayParser {
   }
 
   static List<Product> collectProducts(DOM.Document dom){
-    List<DOM.Element> divs = dom.querySelectorAll("div.product-item-inner");
+    List<DOM.Element> divs = dom.querySelectorAll('div.product-item-inner');
     List<Product> products = [];
     for (var div in divs){
       products.add(Product(
           _findName(div),
           _findPrice(div),
-          "Safeway",
+          'Safeway',
           _findImageURL(div),
-          ""
+          ''
       ));
     }
     return products;
