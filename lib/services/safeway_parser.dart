@@ -1,6 +1,6 @@
 import 'package:html/dom.dart' as DOM;
 
-import 'product.dart';
+import '../models/product.dart';
 
 class SafewayParser {
   static String _urlBase = 'https://www.safeway.com/shop/search-results.html';

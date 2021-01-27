@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
-import 'product.dart';
+import '../models/product.dart';
 
 class Store{
   String name;
