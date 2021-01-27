@@ -5,6 +5,7 @@ import 'package:html/parser.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 import 'product.dart';
+import 'kroger.dart';
 import 'safeway_parser.dart';
 
 class ScreenArguments {
@@ -22,10 +23,16 @@ class _PriceSearchState extends State<PriceSearch> {
   WebViewPlusController _controller;
 
   List<Product> _products = [];
+  String _title;
+
+  bool isKrogerFetched = false;
 
   @override
   Widget build(BuildContext context) {
     final ScreenArguments args = ModalRoute.of(context).settings.arguments;
+    _title = args.title;
+
+    executeAfterBuild();
 
     return Scaffold(
       appBar: AppBar(title: Text(args.title)),
@@ -44,7 +51,7 @@ class _PriceSearchState extends State<PriceSearch> {
                     },
                     onPageFinished: (url){
                       print("Page loaded: $url");
-                      fetchData();
+                      fetchSafewayData();
                     },
               ))),
           Text("price search page"),
@@ -66,7 +73,7 @@ class _PriceSearchState extends State<PriceSearch> {
     );
   }
 
-  void fetchData() async {
+  void fetchSafewayData() async {
     String docu = await this._controller.evaluateJavascript('document.documentElement.innerHTML');
     var html = json.decode(docu);
     var dom = parse(html);
@@ -77,7 +84,23 @@ class _PriceSearchState extends State<PriceSearch> {
     }
 
     setState(() {
-      _products = products;
+      _products.addAll(products);
     });
   }
+
+  Future<void> executeAfterBuild() async {
+    if (!isKrogerFetched) {
+      var kroger = KrogerParser();
+      var products = await kroger.fetch(_title);
+      for (var p in products) {
+        print("${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}");
+      }
+      setState(() {
+        _products.addAll(products);
+      });
+      isKrogerFetched = true;
+    }
+  }
+
+
 }

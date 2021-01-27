@@ -9,11 +9,11 @@ class SafewayParser {
     return _urlBase + "?q=" + searchTerm + "&sort=price";
   }
 
-  static String findName(DOM.Element productDiv){
+  static String _findName(DOM.Element productDiv){
     return productDiv.querySelector('a.product-title').innerHtml.trim();
   }
   
-  static double findPrice(DOM.Element productDiv){
+  static double _findPrice(DOM.Element productDiv){
     var strPrice = productDiv.querySelector('span.product-price').innerHtml;
     var words = strPrice.split(" ");
 
@@ -27,7 +27,7 @@ class SafewayParser {
     return price;
   }
 
-  static String findImageURL(DOM.Element productDiv){
+  static String _findImageURL(DOM.Element productDiv){
     return productDiv.querySelector('img.ab-lazy').attributes['src'];
   }
 
@@ -36,10 +36,10 @@ class SafewayParser {
     List<Product> products = [];
     for (var div in divs){
       products.add(Product(
-          findName(div),
-          findPrice(div),
+          _findName(div),
+          _findPrice(div),
           "Safeway",
-          findImageURL(div),
+          _findImageURL(div),
           ""
       ));
     }
