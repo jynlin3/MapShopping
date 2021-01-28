@@ -7,6 +7,7 @@ import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 import 'models/product.dart';
 import 'services/kroger.dart';
 import 'services/safeway_parser.dart';
+import 'services/target.dart';
 
 class ScreenArguments {
   final String title;
@@ -25,7 +26,8 @@ class _PriceSearchState extends State<PriceSearch> {
   List<Product> _products = [];
   String _title;
 
-  bool isKrogerFetched = false;
+  bool _isKrogerFetched = false;
+  bool _isTargetFetched = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,17 +90,36 @@ class _PriceSearchState extends State<PriceSearch> {
     });
   }
 
-  Future<void> executeAfterBuild() async {
-    if (!isKrogerFetched) {
-      var kroger = KrogerParser();
-      var products = await kroger.fetch(_title);
-      for (var p in products) {
-        print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
-      }
-      setState(() {
-        _products.addAll(products);
-      });
-      isKrogerFetched = true;
+  Future<void> fetchKrogerData() async {
+    var kroger = KrogerParser();
+    var products = await kroger.fetch(_title);
+    for (var p in products) {
+      print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
+    }
+    setState(() {
+      _products.addAll(products);
+    });
+  }
+
+  Future<void> fetchTargetData() async {
+    var target = TargetParser();
+    var products = await target.fetch(_title);
+    for (var p in products){
+      print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
+    }
+    setState(() {
+      _products.addAll(products);
+    });
+  }
+
+  void executeAfterBuild() {
+    if (!_isKrogerFetched) {
+      _isKrogerFetched = true;
+      fetchKrogerData();
+    }
+    if (! _isTargetFetched) {
+      _isTargetFetched = true;
+      fetchTargetData();
     }
   }
 

@@ -4,15 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
 import '../models/product.dart';
+import '../models/store.dart';
 
-class Store{
-  String name;
-  String locationId;
-  Store(String name, String locationId){
-    this.name = name;
-    this.locationId = locationId;
-  }
-}
 
 class KrogerCore {
   String _access_token;
