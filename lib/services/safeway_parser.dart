@@ -28,7 +28,11 @@ class SafewayParser {
   }
 
   static String _findImageURL(DOM.Element productDiv){
-    return productDiv.querySelector('img.ab-lazy').attributes['src'];
+    if (productDiv.querySelector('img.ab-lazy').attributes.containsKey('src')){
+      return productDiv.querySelector('img.ab-lazy').attributes['src'];
+    } else {
+      return 'https://www.stma.org/wp-content/uploads/2017/10/no-image-icon.png';
+    }
   }
 
   static List<Product> collectProducts(DOM.Document dom){

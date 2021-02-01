@@ -103,7 +103,7 @@ class TargetParser extends TargetCore {
       print('[Target] Fail to find price of ${name}');
       print(e);
     }
-    return '';
+    return 'https://www.stma.org/wp-content/uploads/2017/10/no-image-icon.png';
   }
 
   Future<List<Product>> _collectProducts(String searchTerm, String locationId) async{

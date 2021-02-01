@@ -122,7 +122,7 @@ class KrogerParser extends KrogerCore {
     if(jsonItem.containsKey('productId'))
       return 'https://www.kroger.com/product/images/large/front/${jsonItem['productId']}';
     else
-      return '';
+      return 'https://www.stma.org/wp-content/uploads/2017/10/no-image-icon.png';
   }
 
   Future<List<Product>> _collectProducts(String searchTerm, List<Store> stores) async{

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 import 'models/product.dart';
@@ -66,14 +67,13 @@ class _PriceSearchState extends State<PriceSearch> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                                Image(
+                                FadeInImage.memoryNetwork(
                                   height: 150,
                                   width: 150,
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.topRight,
-                                  image: index % 2 == 1 ?
-                                  NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg') :
-                                  NetworkImage('https://goodeggs1.imgix.net/product_photos/ZrGjmxboSBGgkiDGz3R3_20161130-StJohns_LargeEggsDozen_MG_7969.jpg?w=840&h=525&fm=jpg&q=80&fit=crop'),
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.centerLeft,
+                                  image: this._products[index].imageURL,
+                                  placeholder: kTransparentImage,
                               ),
                               Expanded(
                                   child:Column(
