@@ -61,12 +61,37 @@ class _PriceSearchState extends State<PriceSearch> {
               child: ListView.builder(
                     itemCount: this._products.length,
                     itemBuilder: (BuildContext context, int index){
-                      return Container(
-                          key: Key(this._products[index].name),
-                          child: Card(
-                              child: ListTile(
-                                title: Text(this._products[index].name),
-                              ))
+                      return Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                                Image(
+                                  height: 150,
+                                  width: 150,
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.topRight,
+                                  image: index % 2 == 1 ?
+                                  NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg') :
+                                  NetworkImage('https://goodeggs1.imgix.net/product_photos/ZrGjmxboSBGgkiDGz3R3_20161130-StJohns_LargeEggsDozen_MG_7969.jpg?w=840&h=525&fm=jpg&q=80&fit=crop'),
+                              ),
+                              Expanded(
+                                  child:Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(this._products[index].name,
+                                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(this._products[index].store,
+                                          style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                      SizedBox(height: 8),
+                                      Text("\$ ${this._products[index].price}",
+                                          style: const TextStyle(fontSize: 21, color: Colors.black, fontWeight: FontWeight.bold))
+                                    ]
+                                )),
+                            ],
+                          ),
                       );
                     }
           )),
