@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'database_helper.dart';
 import 'price_search.dart';
+import 'services/google_place.dart';
 
 void main() {
   runApp(MyApp());
@@ -163,6 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
               zoom: 11.0,
             ),
             markers: _markers,
+            myLocationEnabled: true
           )
         ],
         controller: _pageController,
@@ -236,22 +238,16 @@ class _MyHomePageState extends State<MyHomePage> {
           desiredAccuracy: LocationAccuracy.high);
       debugPrint('----- userLocation: ${currentPos}');
     } catch(e) {
+      print(e);
       return;
     }
 
-    setState((){
-      this._markers.add(Marker(
-        markerId: MarkerId('userLocation'),
-        position: LatLng(currentPos.latitude, currentPos.longitude),
-        icon: BitmapDescriptor.defaultMarker,
-        infoWindow: InfoWindow(title: 'Your Location')
-      ));
-    });
-
     this._mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
       target: LatLng(currentPos.latitude, currentPos.longitude),
-      zoom: 17.0,
+      zoom: 13.0,
     )));
+
+    getMarkers(currentPos.latitude, currentPos.longitude);
   }
 
   void setupList() async{
@@ -307,5 +303,29 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  Future<void> getMarkers(double lat, double lng) async{
+    var places = await PlaceService.getPlaces(lat, lng);
+    for (var p in places) {
+      print('${p.name}\t ${p.rating}(${p.userRatingCount}) ${p.openStatus} ${p.latitude} ${p.longitude} ');
+    }
+
+    var markers = List<Marker>();
+    places.forEach((place){
+      Marker marker = Marker(
+        markerId: MarkerId(place.placeId),
+        draggable: false,
+        icon: BitmapDescriptor.defaultMarker,
+        infoWindow: InfoWindow(title: place.name),
+        position: LatLng(place.latitude, place.longitude)
+      );
+
+      markers.add(marker);
+    });
+
+    setState((){
+      this._markers.addAll(markers);
+    });
   }
 }
