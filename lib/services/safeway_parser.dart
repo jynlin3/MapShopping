@@ -39,9 +39,14 @@ class SafewayParser {
     List<DOM.Element> divs = dom.querySelectorAll('div.product-item-inner');
     List<Product> products = [];
     for (var div in divs){
+      // filter products without price
+      var price = _findPrice(div);
+      if (price <= 0)
+        continue;
+
       products.add(Product(
           _findName(div),
-          _findPrice(div),
+          price,
           'Safeway',
           _findImageURL(div),
           ''

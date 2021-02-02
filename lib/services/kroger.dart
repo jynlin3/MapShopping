@@ -107,15 +107,15 @@ class KrogerParser extends KrogerCore {
     try {
       var priceMap = jsonItem['items'][0]['price'];
       if(priceMap.containsKey('promo') && priceMap['promo'] > 0)
-        return priceMap['promo'];
-      return priceMap['regular'];
+        return priceMap['promo'] is int ? priceMap['promo'].toDouble() : priceMap['promo'];
+      return priceMap['regular'] is int ? priceMap['regular'].toDouble() : priceMap['regular'];
     }
     catch(e){
       String name = _findName(jsonItem);
       print('[Kroger] Fail to find price for $name');
       print(e);
     }
-    return 0;
+    return 0.0;
   }
 
   String _findImageURL(dynamic jsonItem){
@@ -133,9 +133,14 @@ class KrogerParser extends KrogerCore {
         continue;
 
       for(var item in jsonResponse['data']){
+        // filter products without price
+        var price = _findPrice(item);
+        if (price <= 0)
+          continue;
+
         products.add(Product(
           _findName(item),
-          _findPrice(item),
+          price,
           store.name,
           _findImageURL(item),
           ''

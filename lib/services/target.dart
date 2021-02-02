@@ -119,9 +119,14 @@ class TargetParser extends TargetCore {
 
       if(jsonResponse.containsKey('products')){
         for(var product in jsonResponse['products']){
+          // filter products without price
+          var price = _findPrice(product);
+          if (price <= 0)
+            continue;
+
           products.add(Product(
               _findName(product),
-              _findPrice(product),
+              price,
               'Target',
               _findImageURL(product),
               ''));

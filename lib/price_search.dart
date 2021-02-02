@@ -57,7 +57,6 @@ class _PriceSearchState extends State<PriceSearch> {
                       fetchSafewayData();
                     },
               ))),
-          Text('price search page'),
           Expanded(
               child: ListView.builder(
                     itemCount: this._products.length,
@@ -112,6 +111,7 @@ class _PriceSearchState extends State<PriceSearch> {
 
     setState(() {
       _products.addAll(products);
+      _products.sort((a, b) => a.price.compareTo(b.price));
     });
   }
 
@@ -123,6 +123,7 @@ class _PriceSearchState extends State<PriceSearch> {
     }
     setState(() {
       _products.addAll(products);
+      _products.sort((a, b) => a.price.compareTo(b.price));
     });
   }
 
@@ -134,6 +135,7 @@ class _PriceSearchState extends State<PriceSearch> {
     }
     setState(() {
       _products.addAll(products);
+      _products.sort((a, b) => a.price.compareTo(b.price));
     });
   }
 
