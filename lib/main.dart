@@ -6,7 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'database_helper.dart';
 import 'price_search.dart';
-import 'services/google_place.dart';
+import 'services/googlemaps.dart';
 
 void main() {
   runApp(MyApp());
@@ -306,7 +306,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> getMarkers(double lat, double lng) async{
-    var places = await PlaceService.getPlaces(lat, lng);
+    var places = await GoogleMapsService.getPlaces(lat, lng);
     for (var p in places) {
       print('${p.name}\t ${p.rating}(${p.userRatingCount}) ${p.openStatus} ${p.latitude} ${p.longitude} ');
     }

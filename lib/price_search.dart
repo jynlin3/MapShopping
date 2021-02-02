@@ -6,6 +6,7 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 import 'models/product.dart';
+import 'services/googlemaps.dart';
 import 'services/kroger.dart';
 import 'services/safeway_parser.dart';
 import 'services/target.dart';
@@ -82,7 +83,7 @@ class _PriceSearchState extends State<PriceSearch> {
                                           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)
                                       ),
                                       SizedBox(height: 4),
-                                      Text(this._products[index].store,
+                                      Text("${this._products[index].store}  ${this._products[index].distance}",
                                           style: const TextStyle(fontSize: 13, color: Colors.grey)),
                                       SizedBox(height: 8),
                                       Text("\$ ${this._products[index].price}",
@@ -105,8 +106,23 @@ class _PriceSearchState extends State<PriceSearch> {
     var dom = parse(html);
 
     var products = SafewayParser.collectProducts(dom);
-    for(var p in products){
-      print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
+
+    var lat = 47.690952;
+    var lng = -122.301245;
+    var places = await GoogleMapsService.getPlaces(lat, lng);
+    var dist = '';
+    for(var p in places){
+      if(p.name == 'Safeway'){
+         dist = await GoogleMapsService.getDistance(lat, lng, p.latitude, p.longitude);
+         break;
+      }
+    }
+
+    if(dist.isNotEmpty){
+      for(var p in products){
+        p.distance = dist;
+        print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}\t${p.distance}');
+      }
     }
 
     setState(() {
@@ -119,7 +135,7 @@ class _PriceSearchState extends State<PriceSearch> {
     var kroger = KrogerParser();
     var products = await kroger.fetch(_title);
     for (var p in products) {
-      print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
+      print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
     }
     setState(() {
       _products.addAll(products);
@@ -131,7 +147,7 @@ class _PriceSearchState extends State<PriceSearch> {
     var target = TargetParser();
     var products = await target.fetch(_title);
     for (var p in products){
-      print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}');
+      print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
     }
     setState(() {
       _products.addAll(products);

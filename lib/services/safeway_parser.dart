@@ -49,6 +49,7 @@ class SafewayParser {
           price,
           'Safeway',
           _findImageURL(div),
+          '',
           ''
       ));
     }

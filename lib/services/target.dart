@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
+import 'googlemaps.dart';
 import 'opendatasoft.dart';
 import '../models/product.dart';
 import '../models/store.dart';
@@ -60,10 +61,16 @@ class TargetParser extends TargetCore {
     List<Store> stores = [];
     try{
       for (var store in jsonResponse[0]['locations']){
+        var storeLat = store.containsKey('geographic_specifications') ? store['geographic_specifications']['latitude'] : null;
+        var storeLng = store.containsKey('geographic_specifications') ? store['geographic_specifications']['longitude'] : null;
+
         if(store.containsKey('location_id')){
           stores.add(Store(
               'Target',
-              store['location_id'].toString()
+              store['location_id'].toString(),
+              storeLat,
+              storeLng,
+              ""
           ));
         }
       }
@@ -73,7 +80,7 @@ class TargetParser extends TargetCore {
       print(e);
     }
 
-    return stores.isNotEmpty ? stores : [Store('Target', '3286')];
+    return stores.isNotEmpty ? stores : [Store('Target', '3286', null, null, "")];
   }
 
   String _findName(dynamic jsonProduct){
@@ -106,7 +113,7 @@ class TargetParser extends TargetCore {
     return 'https://www.stma.org/wp-content/uploads/2017/10/no-image-icon.png';
   }
 
-  Future<List<Product>> _collectProducts(String searchTerm, String locationId) async{
+  Future<List<Product>> _collectProducts(String searchTerm, String locationId, String distance) async{
     List<Product> products = [];
     var totalPage = 0;
     var curPage = 1;
@@ -129,7 +136,9 @@ class TargetParser extends TargetCore {
               price,
               'Target',
               _findImageURL(product),
-              ''));
+              '',
+              distance
+          ));
         }
       }
 
@@ -141,12 +150,17 @@ class TargetParser extends TargetCore {
 
   Future<List<Product>> fetch(String searchTerm) async {
     await _getAPIKey();
-    var stores = await collectStores(47.690952, -122.301245);
+
+    var lat = 47.690952;
+    var lng = -122.301245;
+    var stores = await collectStores(lat, lng);
 
     if (stores.isEmpty){
       return [];
     }
 
-    return await _collectProducts(searchTerm, stores[0].locationId);
+    stores[0].distance = await GoogleMapsService.getDistance(lat, lng, stores[0].latitude, stores[0].longitude);
+
+    return await _collectProducts(searchTerm, stores[0].locationId, stores[0].distance);
   }
 }

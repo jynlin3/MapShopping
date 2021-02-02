@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
+import 'googlemaps.dart';
 import '../models/product.dart';
 import '../models/store.dart';
 
@@ -91,7 +92,17 @@ class KrogerParser extends KrogerCore {
         continue;
       if (stores.containsKey(store['chain']))
         continue;
-      stores[store['chain']] = Store(store['name'], store['locationId']);
+
+      var storeLat = (store.containsKey('geolocation')) ? store['geolocation']['latitude'] : null;
+      var storeLng = (store.containsKey('geolocation')) ? store['geolocation']['longitude'] : null;
+
+      stores[store['chain']] = Store(
+        store['name'],
+        store['locationId'],
+          storeLat,
+          storeLng,
+        await GoogleMapsService.getDistance(lat, long, storeLat, storeLng)
+      );
     }
     return stores.values.toList();
   }
@@ -143,7 +154,8 @@ class KrogerParser extends KrogerCore {
           price,
           store.name,
           _findImageURL(item),
-          ''
+          '',
+          store.distance
         ));
       }
     }
