@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:core';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -8,6 +10,7 @@ import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 import 'models/product.dart';
 import 'services/googlemaps.dart';
 import 'services/kroger.dart';
+import 'services/pricecomparisonengine.dart';
 import 'services/safeway_parser.dart';
 import 'services/target.dart';
 
@@ -30,6 +33,9 @@ class _PriceSearchState extends State<PriceSearch> {
 
   bool _isKrogerFetched = false;
   bool _isTargetFetched = false;
+  bool _isRecommendationFetched = false;
+
+  // Stopwatch stopWatch = Stopwatch();
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +59,12 @@ class _PriceSearchState extends State<PriceSearch> {
                     onWebViewCreated: (controller){
                       this._controller = controller;
                     },
+                    // onPageStarted: (url){
+                    //   stopWatch.start();
+                    // },
                     onPageFinished: (url){
                       print('Page loaded: $url');
-                      fetchSafewayData();
+                      // fetchSafewayData();
                     },
               ))),
           Expanded(
@@ -100,69 +109,80 @@ class _PriceSearchState extends State<PriceSearch> {
     );
   }
 
-  void fetchSafewayData() async {
-    String docu = await this._controller.evaluateJavascript('document.documentElement.innerHTML');
-    var html = json.decode(docu);
-    var dom = parse(html);
+  // void fetchSafewayData() async {
+  //   String docu = await this._controller.evaluateJavascript('document.documentElement.innerHTML');
+  //   var html = json.decode(docu);
+  //   var dom = parse(html);
+  //
+  //   var products = SafewayParser.collectProducts(dom);
+  //
+  //   print('safeway parser executed in ${stopWatch.elapsed}');
+  //
+  //   var lat = 47.690952;
+  //   var lng = -122.301245;
+  //   var places = await GoogleMapsService.getPlaces(lat, lng);
+  //   var dist = '';
+  //   for(var p in places){
+  //     if(p.name == 'Safeway'){
+  //        dist = await GoogleMapsService.getDistance(lat, lng, p.latitude, p.longitude);
+  //        break;
+  //     }
+  //   }
+  //
+  //   if(dist.isNotEmpty){
+  //     for(var p in products){
+  //       p.distance = dist;
+  //       print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}\t${p.distance}');
+  //     }
+  //   }
+  //
+  //   setState(() {
+  //     _products.addAll(products);
+  //     _products.sort((a, b) => a.price.compareTo(b.price));
+  //   });
+  // }
 
-    var products = SafewayParser.collectProducts(dom);
-
-    var lat = 47.690952;
-    var lng = -122.301245;
-    var places = await GoogleMapsService.getPlaces(lat, lng);
-    var dist = '';
-    for(var p in places){
-      if(p.name == 'Safeway'){
-         dist = await GoogleMapsService.getDistance(lat, lng, p.latitude, p.longitude);
-         break;
-      }
-    }
-
-    if(dist.isNotEmpty){
-      for(var p in products){
-        p.distance = dist;
-        print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}\t${p.distance}');
-      }
-    }
-
+  // Future<void> fetchKrogerData() async {
+  //   var kroger = KrogerParser();
+  //   var products = await kroger.fetch(_title);
+  //   for (var p in products) {
+  //     print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
+  //   }
+  //   setState(() {
+  //     _products.addAll(products);
+  //     _products.sort((a, b) => a.price.compareTo(b.price));
+  //   });
+  // }
+  //
+  // Future<void> fetchTargetData() async {
+  //   var target = TargetParser();
+  //   var products = await target.fetch(_title);
+  //   for (var p in products){
+  //     print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
+  //   }
+  //   setState(() {
+  //     _products.addAll(products);
+  //     _products.sort((a, b) => a.price.compareTo(b.price));
+  //   });
+  // }
+  Future<void> fetchRecommendations() async {
+    var products = await PriceComparisonEngineParser.fetch(_title);
     setState(() {
       _products.addAll(products);
-      _products.sort((a, b) => a.price.compareTo(b.price));
-    });
-  }
-
-  Future<void> fetchKrogerData() async {
-    var kroger = KrogerParser();
-    var products = await kroger.fetch(_title);
-    for (var p in products) {
-      print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
-    }
-    setState(() {
-      _products.addAll(products);
-      _products.sort((a, b) => a.price.compareTo(b.price));
-    });
-  }
-
-  Future<void> fetchTargetData() async {
-    var target = TargetParser();
-    var products = await target.fetch(_title);
-    for (var p in products){
-      print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
-    }
-    setState(() {
-      _products.addAll(products);
-      _products.sort((a, b) => a.price.compareTo(b.price));
     });
   }
 
   void executeAfterBuild() {
-    if (!_isKrogerFetched) {
-      _isKrogerFetched = true;
-      fetchKrogerData();
-    }
-    if (! _isTargetFetched) {
-      _isTargetFetched = true;
-      fetchTargetData();
+    // if (!_isKrogerFetched) {
+    //   _isKrogerFetched = true;
+    //   fetchKrogerData();
+    // }
+    // if (! _isTargetFetched) {
+    //   _isTargetFetched = true;
+    //   fetchTargetData();
+    // }
+    if (!_isRecommendationFetched) {
+      fetchRecommendations();
     }
   }
 
