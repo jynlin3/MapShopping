@@ -28,7 +28,8 @@ class PriceSearch extends StatefulWidget {
 class _PriceSearchState extends State<PriceSearch> {
   WebViewPlusController _controller;
 
-  List<Product> _products = [];
+  // List<Product> _products = [];
+  List<Product> _products;
   String _title;
 
   bool _isKrogerFetched = false;
@@ -67,43 +68,49 @@ class _PriceSearchState extends State<PriceSearch> {
                       // fetchSafewayData();
                     },
               ))),
-          Expanded(
-              child: ListView.builder(
-                    itemCount: this._products.length,
-                    itemBuilder: (BuildContext context, int index){
-                      return Card(
-                          clipBehavior: Clip.antiAlias,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                                FadeInImage.memoryNetwork(
-                                  height: 150,
-                                  width: 150,
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.centerLeft,
-                                  image: this._products[index].imageURL,
-                                  placeholder: kTransparentImage,
+          (_products == null)
+              ? Center(child: CircularProgressIndicator())
+              : Expanded(
+                  child: ListView.builder(
+                        itemCount: this._products.length,
+                        itemBuilder: (BuildContext context, int index){
+                          return Card(
+                              clipBehavior: Clip.antiAlias,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                    FadeInImage.memoryNetwork(
+                                      height: 150,
+                                      width: 150,
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.centerLeft,
+                                      image: this._products[index].imageURL,
+                                      placeholder: kTransparentImage,
+                                  ),
+                                  Expanded(
+                                      child:Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(this._products[index].name,
+                                              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text("${this._products[index].store}  ${this._products[index].distance}",
+                                              style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                          SizedBox(height: 8),
+                                          Text("\$ ${this._products[index].price}",
+                                              style: const TextStyle(fontSize: 21, color: Colors.black, fontWeight: FontWeight.bold)),
+                                          IconButton(
+                                              icon: Icon(Icons.bookmark_border),
+                                              onPressed: () {print('press search');}
+                                          ),
+                                        ]
+                                    )),
+                                ],
                               ),
-                              Expanded(
-                                  child:Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(this._products[index].name,
-                                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text("${this._products[index].store}  ${this._products[index].distance}",
-                                          style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                                      SizedBox(height: 8),
-                                      Text("\$ ${this._products[index].price}",
-                                          style: const TextStyle(fontSize: 21, color: Colors.black, fontWeight: FontWeight.bold))
-                                    ]
-                                )),
-                            ],
-                          ),
-                      );
-                    }
-          )),
+                          );
+                        }
+              )),
         ],
       )
     );
@@ -168,7 +175,7 @@ class _PriceSearchState extends State<PriceSearch> {
   Future<void> fetchRecommendations() async {
     var products = await PriceComparisonEngineParser.fetch(_title);
     setState(() {
-      _products.addAll(products);
+      _products = products;
     });
   }
 
