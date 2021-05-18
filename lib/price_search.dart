@@ -7,6 +7,7 @@ import 'package:html/parser.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
+import 'database_helper.dart';
 import 'models/product.dart';
 import 'services/googlemaps.dart';
 import 'services/kroger.dart';
@@ -37,6 +38,8 @@ class _PriceSearchState extends State<PriceSearch> {
   bool _isRecommendationFetched = false;
 
   // Stopwatch stopWatch = Stopwatch();
+
+  final _dbHelper = DatabaseHelper.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -101,8 +104,13 @@ class _PriceSearchState extends State<PriceSearch> {
                                           Text("\$ ${this._products[index].price}",
                                               style: const TextStyle(fontSize: 21, color: Colors.black, fontWeight: FontWeight.bold)),
                                           IconButton(
-                                              icon: Icon(Icons.bookmark_border),
-                                              onPressed: () {print('press search');}
+                                              icon: this._products[index].isDeleted ? Icon(Icons.bookmark_border) : Icon(Icons.bookmark),
+                                              onPressed: () {
+                                                if(this._products[index].isDeleted)
+                                                  onPressAdd(index);
+                                                else
+                                                  onPressDelete(index);
+                                              }
                                           ),
                                         ]
                                     )),
@@ -173,9 +181,17 @@ class _PriceSearchState extends State<PriceSearch> {
   //   });
   // }
   Future<void> fetchRecommendations() async {
-    var products = await PriceComparisonEngineParser.fetch(_title);
+    var recommendations = await PriceComparisonEngineParser.fetch(_title);
+    var saved_products = await this._dbHelper.getAllProducts();
+    for (var r in recommendations) {
+      for (var p in saved_products) {
+        if (r.name == p.name)
+          r.isDeleted = false;
+      }
+    }
+
     setState(() {
-      _products = products;
+      _products = recommendations;
     });
   }
 
@@ -189,8 +205,27 @@ class _PriceSearchState extends State<PriceSearch> {
     //   fetchTargetData();
     // }
     if (!_isRecommendationFetched) {
+      _isRecommendationFetched = true;
       fetchRecommendations();
     }
+  }
+
+  void onPressAdd(int index){
+    setState(() {
+      _products[index].isDeleted = false;
+    });
+    this._dbHelper.insertProduct(_products[index]);
+  }
+
+  void onPressDelete(int index) async {
+    await this._dbHelper.deleteProduct(_products[index].name);
+    this._dbHelper.getAllProducts().then((items){
+      print(items);
+    });
+
+    setState(() {
+      _products[index].isDeleted = true;
+    });
   }
 
 

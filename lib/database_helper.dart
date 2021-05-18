@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'models/product.dart';
+
 const columnId = 'id';
 const columnTitle = 'title';
 const columnIsDeleted = 'isDeleted';
@@ -39,6 +41,7 @@ class DatabaseHelper {
   static final _databaseVersion = 1;
 
   static const itemTable = 'item';
+  static const productTable = 'product';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -66,6 +69,12 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $itemTable( 
+        $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
+        $columnTitle TEXT, 
+        $columnIsDeleted INTEGER)
+    ''');
+    await db.execute('''
+      CREATE TABLE $productTable( 
         $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
         $columnTitle TEXT, 
         $columnIsDeleted INTEGER)
@@ -103,6 +112,29 @@ class DatabaseHelper {
         itemTable,
         where: 'id = ?',
         whereArgs: [id]
+    );
+  }
+
+  Future<int> insertProduct(Product product) async{
+    Database db = await instance.database;
+    return await db.insert(productTable, product.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Product>> getAllProducts() async {
+    Database db = await instance.database;
+    final sql = 'SELECT * FROM $productTable WHERE $columnIsDeleted == 0';
+    final List<Map<String, dynamic>> maps = await db.rawQuery(sql);
+    return List.generate(maps.length, (i){
+      return Product.fromDB(maps[i]);
+    });
+  }
+
+  Future<void> deleteProduct(String name) async {
+    Database db = await instance.database;
+    await db.delete(
+      productTable,
+      where: 'title = ?',
+      whereArgs: [name]
     );
   }
 }

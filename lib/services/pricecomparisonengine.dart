@@ -5,12 +5,14 @@ import 'package:http/http.dart';
 import '../models/product.dart';
 
 class PriceComparisonEngineCore {
-  static const _api_base = 'https://price-comparison-engine.herokuapp.com';
+  static const _api_base = 'https://us-central1-mapshopping.cloudfunctions.net';
 
   static Future<dynamic> _getRecommendations(String searchTerm, String userDetail) async{
-    searchTerm = "soda";
-    userDetail = "coca-cola";
-    var url = '$_api_base/recommendations?q=$searchTerm&user_detail=$userDetail';
+    var test = "test";
+    print(test);
+    // searchTerm = "soda";
+    // userDetail = "coca-cola";
+    var url = '$_api_base/recommendations_http?q=$searchTerm&user_detail=$userDetail';
     var headers = {
       'Accept': 'application/json'
     };
@@ -34,7 +36,7 @@ class PriceComparisonEngineParser extends PriceComparisonEngineCore {
     for (var product in jsonResponse['recommendations']){
       products.add(Product(
         product['name'],
-        product['price'],
+        product['price'] * 1.0,
         product['store'],
         product['imageUrl'],
         product['brand'],
