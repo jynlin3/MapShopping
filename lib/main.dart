@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -63,17 +63,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  PageController _pageController;
+  late PageController _pageController;
 
-  GoogleMapController _mapController;
+  late GoogleMapController _mapController;
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
   Geolocator _geolocator = Geolocator();
   Set<Marker> _markers = {};
 
   List<Item> _items = [];
-  String _input;
+  String _input = "";
   final _dbHelper = DatabaseHelper.instance;
+
+  // final ScrollController _scrollController = ScrollController();
 
   @override
   void initState(){
@@ -100,6 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           // home page
           ListView.builder(
+              // controller: _scrollController,
+              // reverse: true,
               itemCount: this._items.length,
               itemBuilder: (BuildContext context, int index){
                 return Container(
@@ -286,6 +290,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     Navigator.of(context, rootNavigator: true).pop();
+    // this._scrollController.animateTo(
+    //     _scrollController.position.minScrollExtent,
+    //     duration: Duration(milliseconds: 500),
+    //     curve: Curves.fastOutSlowIn
+    // );
   }
 
   void onPressEdit(Item item) async{
@@ -311,7 +320,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print('${p.name}\t ${p.rating}(${p.userRatingCount}) ${p.openStatus} ${p.latitude} ${p.longitude} ');
     }
 
-    var markers = List<Marker>();
+    var markers = <Marker>[];
     places.forEach((place){
       Marker marker = Marker(
         markerId: MarkerId(place.placeId),

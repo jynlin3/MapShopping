@@ -27,11 +27,11 @@ class PriceSearch extends StatefulWidget {
   _PriceSearchState createState() => _PriceSearchState();
 }
 class _PriceSearchState extends State<PriceSearch> {
-  WebViewPlusController _controller;
+  late WebViewPlusController _controller;
 
-  // List<Product> _products = [];
-  List<Product> _products;
-  String _title;
+  List<Product> _products = [];
+  // late List<Product> _products;
+  String _title = "";
 
   bool _isKrogerFetched = false;
   bool _isTargetFetched = false;
@@ -43,7 +43,7 @@ class _PriceSearchState extends State<PriceSearch> {
 
   @override
   Widget build(BuildContext context) {
-    final ScreenArguments args = ModalRoute.of(context).settings.arguments;
+    final ScreenArguments args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
     _title = args.title;
 
     executeAfterBuild();
@@ -181,8 +181,9 @@ class _PriceSearchState extends State<PriceSearch> {
   //   });
   // }
   Future<void> fetchRecommendations() async {
-    var recommendations = await PriceComparisonEngineParser.fetch(_title);
     var saved_products = await this._dbHelper.getAllProducts();
+    var user_detail_list = saved_products.map((p) => p.name);
+    var recommendations = await PriceComparisonEngineParser.fetch(_title, user_detail_list.join(" "));
     for (var r in recommendations) {
       for (var p in saved_products) {
         if (r.name == p.name)

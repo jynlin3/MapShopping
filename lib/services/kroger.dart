@@ -9,7 +9,7 @@ import '../models/store.dart';
 
 
 class KrogerCore {
-  String _access_token;
+  String _access_token = "";
 
   static const _secret_file_path = 'assets/config.json';
   static const String _api_base = 'https://api.kroger.com';

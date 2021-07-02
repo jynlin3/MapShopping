@@ -1,14 +1,14 @@
 import '../database_helper.dart';
 
 class Product {
-  String name;
-  double price;
-  String store;
-  String imageURL;
-  String brand;
-  String distance;
-  int id;
-  bool isDeleted;
+  String name = "";
+  double price = 0;
+  String store = "";
+  String imageURL = "";
+  String brand = "";
+  String distance = "";
+  int id = -1;
+  bool isDeleted = true;
 
   Product(String name, double price, String store, String imageURL, String brand, String distance){
     this.name = name;
@@ -17,8 +17,6 @@ class Product {
     this.imageURL = imageURL;
     this.brand = brand;
     this.distance = distance;
-    this.id = null;
-    this.isDeleted = true;
   }
 
   // Convert a Item into a Map.

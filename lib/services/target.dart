@@ -10,7 +10,7 @@ import '../models/store.dart';
 
 
 class TargetCore {
-  Map<String, String> _headers;
+  late Map<String, String> _headers;
   static const _secret_file_path = 'assets/config.json';
   static const _url_base = 'https://target1.p.rapidapi.com';
 
@@ -80,7 +80,7 @@ class TargetParser extends TargetCore {
       print(e);
     }
 
-    return stores.isNotEmpty ? stores : [Store('Target', '3286', null, null, "")];
+    return stores.isNotEmpty ? stores : [Store('Target', '3286', 180, 90, "")];
   }
 
   String _findName(dynamic jsonProduct){
