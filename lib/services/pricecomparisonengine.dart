@@ -8,10 +8,8 @@ class PriceComparisonEngineCore {
   static const _api_base = 'https://us-central1-mapshopping.cloudfunctions.net';
 
   static Future<dynamic> _getRecommendations(String searchTerm, String userDetail) async{
-    var test = "test";
-    print(test);
-    // searchTerm = "soda";
-    // userDetail = "coca-cola";
+    print("[Jyn]" + userDetail);
+    // userDetail = "";
     var url = '$_api_base/recommendations_http?q=$searchTerm&user_detail=$userDetail';
     var headers = {
       'Accept': 'application/json'
@@ -30,9 +28,9 @@ class PriceComparisonEngineCore {
 
 class PriceComparisonEngineParser extends PriceComparisonEngineCore {
 
-  static Future<List<Product>> fetch(String searchTerm) async {
+  static Future<List<Product>> fetch(String searchTerm, String userDetail) async {
     List<Product> products = [];
-    var jsonResponse = await PriceComparisonEngineCore._getRecommendations(searchTerm, '');
+    var jsonResponse = await PriceComparisonEngineCore._getRecommendations(searchTerm, userDetail);
     for (var product in jsonResponse['recommendations']){
       products.add(Product(
         product['name'],

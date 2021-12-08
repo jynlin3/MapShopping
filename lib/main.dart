@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_geofence/Geolocation.dart';
+import 'package:flutter_geofence/geofence.dart';
 
 import 'database_helper.dart';
 import 'price_search.dart';
@@ -336,5 +338,20 @@ class _MyHomePageState extends State<MyHomePage> {
     setState((){
       this._markers.addAll(markers);
     });
+  }
+
+  Future<void> initPlatformState() async {
+    Geofence.initialize();
+    Geofence.startListening(GeolocationEvent.entry, (evt) {
+      scheduleNotification("Entry of a georegion", "Welcome to: ${evt.id}");
+    });
+    Geofence.startListening(GeolocationEvent.exit, (evt) {
+      scheduleNotification("Exit of a georegion", "Byebye to: ${evt.id}");
+    });
+  }
+
+  void scheduleNotification(String title, String subtitle) {
+    print("scheduling one with $title and $subtitle");
+    //TODO: show notification on phone
   }
 }
