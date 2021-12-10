@@ -4,13 +4,13 @@ A Location-aware Shopping List App with Shop Recommendation Notifications
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Windows User
+  1. Install [Flutter](https://docs.flutter.dev/get-started/install/windows) 2.2.3.
+  2. [Set up Android Studio](https://docs.flutter.dev/get-started/editor).
+      - If Flutter cannot find installed Android Studio, you can run the command. 
+        ```
+        flutter config --android-studio-dir="C:\Program Files\Android\Android Studio"
+        ```
+  4. Copy `assets/config.json`.
+  5. Add `MAPS_API_KEY= <key>` to `android/local.properties`.
+  6. Run the Flutter Project in Android Studio.
