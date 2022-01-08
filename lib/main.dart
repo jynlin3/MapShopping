@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_geofence/geofence.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_geofence/Geolocation.dart';
-import 'package:flutter_geofence/geofence.dart';
 
 import 'database_helper.dart';
 import 'price_search.dart';
@@ -79,11 +80,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // final ScrollController _scrollController = ScrollController();
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    new FlutterLocalNotificationsPlugin();
+
   @override
   void initState(){
     super.initState();
     this._pageController = PageController();
     setupList();
+
+    initGeofence();
+    initLocalNotificationPlugin();
   }
 
   @override
@@ -340,18 +347,67 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> initPlatformState() async {
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initGeofence() async{
+    // If the widget was removed from the tree while asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
     Geofence.initialize();
-    Geofence.startListening(GeolocationEvent.entry, (evt) {
-      scheduleNotification("Entry of a georegion", "Welcome to: ${evt.id}");
+    Geofence.startListening(GeolocationEvent.entry, (entry) {
+      scheduleNotification("Entry of geolocation", "Welcome to: ${entry.id}");
     });
-    Geofence.startListening(GeolocationEvent.exit, (evt) {
-      scheduleNotification("Exit of a georegion", "Byebye to: ${evt.id}");
+
+    //TODO: add stores when a product is saved
+    Geolocation location = Geolocation(
+        latitude: 47.66276, longitude: -122.2987, radius: 500.0,
+        id: 'Kerkplein13');
+    Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue){
+      print("add geolocation succeeded");
+    }).catchError((onError){
+      print("add geolocation failed");
     });
   }
 
-  void scheduleNotification(String title, String subtitle) {
-    print("scheduling one with $title and $subtitle");
-    //TODO: show notification on phone
+  Future<void> initLocalNotificationPlugin() async{
+    var initializationSettingsAndroid =
+      new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: null);
+    var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(
+        initializationSettings, onSelectNotification: null);
+  }
+
+  // Future<void> initPlatformState() async {
+  //   Geofence.initialize();
+  //   Geofence.startListening(GeolocationEvent.entry, (evt) {
+  //     scheduleNotification("Entry of a georegion", "Welcome to: ${evt.id}");
+  //   });
+  //   Geofence.startListening(GeolocationEvent.exit, (evt) {
+  //     scheduleNotification("Exit of a georegion", "Byebye to: ${evt.id}");
+  //   });
+  // }
+
+  void scheduleNotification(String title, String subtitle){
+    var rng = new Random();
+    Future.delayed(Duration(seconds: 1)).then((result) async{
+      var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+          'your channel id', 'your channel name', 'your channel description',
+          importance: Importance.high,
+          priority: Priority.high,
+          ticker: 'ticker'
+      );
+      var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+      var platformChannelSpecifics = NotificationDetails(
+          android: androidPlatformChannelSpecifics,
+          iOS: iOSPlatformChannelSpecifics
+      );
+      await flutterLocalNotificationsPlugin.show(
+          rng.nextInt(1000000), title, subtitle, platformChannelSpecifics,
+          payload: 'item x');
+    });
   }
 }
