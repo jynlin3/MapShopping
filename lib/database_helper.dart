@@ -7,6 +7,7 @@ import 'models/product.dart';
 const columnId = 'id';
 const columnTitle = 'title';
 const columnIsDeleted = 'isDeleted';
+const columnStore = 'store';
 
 class Item {
   final int id;
@@ -77,11 +78,13 @@ class DatabaseHelper {
       CREATE TABLE $productTable( 
         $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
         $columnTitle TEXT, 
-        $columnIsDeleted INTEGER)
+        $columnIsDeleted INTEGER,
+        $columnStore TEXT)
     ''');
     print('Database was created!');
   }
 
+  // Insert/Find/Update/Delete in itemTable
   Future<int> insertItem(Item item) async{
     Database? db = await instance.database;
     return await db!.insert(itemTable, item.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
@@ -115,6 +118,7 @@ class DatabaseHelper {
     );
   }
 
+  // Insert/Find/Update/Delete in productTable
   Future<int> insertProduct(Product product) async{
     Database? db = await instance.database;
     return await db!.insert(productTable, product.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
@@ -132,9 +136,17 @@ class DatabaseHelper {
   Future<void> deleteProduct(String name) async {
     Database? db = await instance.database;
     await db!.delete(
-      productTable,
-      where: 'title = ?',
-      whereArgs: [name]
+        productTable,
+        where: 'title = ?',
+        whereArgs: [name]
     );
+  }
+
+  Future<bool> isStoreInProductTable(String store) async {
+    Database? db = await instance.database;
+    return (await db!.query(
+        productTable,
+        where: '$columnIsDeleted = ? AND $columnStore = ?',
+        whereArgs: [0, store], limit: 1)).length > 0;
   }
 }

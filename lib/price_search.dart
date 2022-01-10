@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:core';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofence/geofence.dart';
 import 'package:html/parser.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
@@ -211,11 +213,46 @@ class _PriceSearchState extends State<PriceSearch> {
     }
   }
 
-  void onPressAdd(int index){
+  void onPressAdd(int index) async{
+    // Check if the store is added.
+    String newStore = _products[index].store;
+    if(await this._dbHelper.isStoreInProductTable(newStore)){
+      print("[Jyn] The store is in product table");
+      newStore = "";
+    }
+
     setState(() {
       _products[index].isDeleted = false;
     });
     this._dbHelper.insertProduct(_products[index]);
+
+    if(newStore.isNotEmpty) {
+      Geofence.getCurrentLocation().then((coordinate) {
+        if (coordinate == null)
+          return;
+
+        // Find nearby stores in 6 miles (10 min drive).
+        GoogleMapsService.getPlaces(
+            coordinate!.latitude, coordinate!.longitude, newStore, 10000)
+            .then((places) {
+          var rng = new Random();
+
+          // Add nearby stores to geofence
+          for (var p in places) {
+            Geolocation location = Geolocation(latitude: p.latitude,
+                longitude: p.longitude,
+                radius: 500,
+                id: '$newStore ${rng.nextInt(1000000)}');
+            Geofence.addGeolocation(location, GeolocationEvent.entry).then((
+                onValue) {
+              print("[Jyn] add geolocation: $newStore(${p.latitude},${p.longitude}) succeeded");
+            }).catchError((onError) {
+              print("[Jyn] add geolocation: $newStore(${p.latitude},${p.longitude}) failed");
+            });
+          }
+        });
+      });
+    }
   }
 
   void onPressDelete(int index) async {
@@ -227,6 +264,17 @@ class _PriceSearchState extends State<PriceSearch> {
     setState(() {
       _products[index].isDeleted = true;
     });
+
+    //TODO: Check if the store should be deleted.
+    //TODO: Remove all stores.
+    /*TODO: Iterate over bookmarked stores
+              Find nearby stores in 15 miles (30 min drive).
+              Add nearby stores to geofence.
+     */
+    if (!await this._dbHelper.isStoreInProductTable(_products[index].store)) {
+      Geofence.removeAllGeolocations();
+
+    }
   }
 
 

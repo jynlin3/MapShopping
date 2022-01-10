@@ -24,7 +24,8 @@ class Product {
     return {
       columnId: null,
       columnTitle: this.name,
-      columnIsDeleted: isDeleted ? 1 : 0
+      columnIsDeleted: isDeleted ? 1 : 0,
+      columnStore: this.store
     };
   }
 
@@ -32,5 +33,6 @@ class Product {
   Product.fromDB(Map<String, dynamic> map):
         id = map[columnId],
         name = map[columnTitle],
-        isDeleted = map[columnIsDeleted] == 1;
+        isDeleted = map[columnIsDeleted] == 1,
+        store = map[columnStore];
 }

@@ -324,7 +324,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> getMarkers(double lat, double lng) async{
-    var places = await GoogleMapsService.getPlaces(lat, lng);
+    var places = await GoogleMapsService.getPlaces(lat, lng, 'supermarket', 1500);
     for (var p in places) {
       print('${p.name}\t ${p.rating}(${p.userRatingCount}) ${p.openStatus} ${p.latitude} ${p.longitude} ');
     }
@@ -358,16 +358,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Geofence.startListening(GeolocationEvent.entry, (entry) {
       scheduleNotification("Entry of geolocation", "Welcome to: ${entry.id}");
     });
-
-    //TODO: add stores when a product is saved
-    Geolocation location = Geolocation(
-        latitude: 47.66276, longitude: -122.2987, radius: 500.0,
-        id: 'Kerkplein13');
-    Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue){
-      print("add geolocation succeeded");
-    }).catchError((onError){
-      print("add geolocation failed");
-    });
   }
 
   Future<void> initLocalNotificationPlugin() async{
@@ -380,16 +370,6 @@ class _MyHomePageState extends State<MyHomePage> {
     flutterLocalNotificationsPlugin.initialize(
         initializationSettings, onSelectNotification: null);
   }
-
-  // Future<void> initPlatformState() async {
-  //   Geofence.initialize();
-  //   Geofence.startListening(GeolocationEvent.entry, (evt) {
-  //     scheduleNotification("Entry of a georegion", "Welcome to: ${evt.id}");
-  //   });
-  //   Geofence.startListening(GeolocationEvent.exit, (evt) {
-  //     scheduleNotification("Exit of a georegion", "Byebye to: ${evt.id}");
-  //   });
-  // }
 
   void scheduleNotification(String title, String subtitle){
     var rng = new Random();
