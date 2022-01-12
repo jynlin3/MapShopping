@@ -2,12 +2,16 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'models/place.dart';
 import 'models/product.dart';
 
 const columnId = 'id';
 const columnTitle = 'title';
 const columnIsDeleted = 'isDeleted';
 const columnStore = 'store';
+const columnLat = 'latitude';
+const columnLong = 'longitude';
+const columnName = 'name';
 
 class Item {
   final int id;
@@ -43,6 +47,7 @@ class DatabaseHelper {
 
   static const itemTable = 'item';
   static const productTable = 'product';
+  static const storeTable = 'store';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -80,6 +85,14 @@ class DatabaseHelper {
         $columnTitle TEXT, 
         $columnIsDeleted INTEGER,
         $columnStore TEXT)
+    ''');
+    await db.execute('''
+      CREATE TABLE $storeTable( 
+        $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
+        $columnName TEXT, 
+        $columnLat REAL,
+        $columnLong REAL,
+        $columnIsDeleted INTEGER)
     ''');
     print('Database was created!');
   }
@@ -148,5 +161,21 @@ class DatabaseHelper {
         productTable,
         where: '$columnIsDeleted = ? AND $columnStore = ?',
         whereArgs: [0, store], limit: 1)).length > 0;
+  }
+
+  // Insert/Find/Update/Delete in storeTable
+  Future<int> insertStore(Place place) async{
+    Database? db = await instance.database;
+    return await db!.insert(
+        storeTable, place.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Place>> getAllStores() async {
+    Database? db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db!.query(
+        storeTable, where: '$columnIsDeleted = ?', whereArgs: [0]);
+    return List.generate(maps.length, (i){
+      return Place.fromDB(maps[i]);
+    });
   }
 }

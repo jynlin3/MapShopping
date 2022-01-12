@@ -1,4 +1,4 @@
-import 'package:html/parser.dart';
+import '../database_helper.dart';
 
 class Place{
   final String name;
@@ -19,4 +19,25 @@ class Place{
         latitude = parsedJson['geometry']['location']['lat'].toDouble(),
         longitude = parsedJson['geometry']['location']['lng'].toDouble(),
         placeId = parsedJson['place_id'];
+
+  // Convert a Place to a Map.
+  Map<String, dynamic> toMap(){
+    return {
+      columnId: null,
+      columnName: this.name,
+      columnLat: this.latitude,
+      columnLong: this.longitude,
+      columnIsDeleted: 0
+    };
+  }
+
+  // Convert a Map into a Place.
+  Place.fromDB(Map<String, dynamic> map):
+      name = map[columnName],
+      rating = 0,
+      userRatingCount = 0,
+      openStatus = '',
+      latitude = map[columnLat],
+      longitude = map[columnLong],
+      placeId = "${map[columnName]} ${map[columnId]}";
 }

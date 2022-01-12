@@ -10,6 +10,7 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 import 'database_helper.dart';
+import 'models/place.dart';
 import 'models/product.dart';
 import 'services/googlemaps.dart';
 import 'services/kroger.dart';
@@ -217,7 +218,7 @@ class _PriceSearchState extends State<PriceSearch> {
     // Check if the store is added.
     String newStore = _products[index].store;
     if(await this._dbHelper.isStoreInProductTable(newStore)){
-      print("[Jyn] The store is in product table");
+      print("[PriceSearch] The store: $newStore is in product table.");
       newStore = "";
     }
 
@@ -228,26 +229,31 @@ class _PriceSearchState extends State<PriceSearch> {
 
     if(newStore.isNotEmpty) {
       Geofence.getCurrentLocation().then((coordinate) {
-        if (coordinate == null)
+        if (coordinate == null) {
+          print("[PriceSearch] Failed to get current location.");
           return;
+        }
 
         // Find nearby stores in 6 miles (10 min drive).
         GoogleMapsService.getPlaces(
             coordinate!.latitude, coordinate!.longitude, newStore, 10000)
             .then((places) {
-          var rng = new Random();
-
-          // Add nearby stores to geofence
+          // Add nearby stores to db and geofence
           for (var p in places) {
-            Geolocation location = Geolocation(latitude: p.latitude,
-                longitude: p.longitude,
-                radius: 500,
-                id: '$newStore ${rng.nextInt(1000000)}');
-            Geofence.addGeolocation(location, GeolocationEvent.entry).then((
-                onValue) {
-              print("[Jyn] add geolocation: $newStore(${p.latitude},${p.longitude}) succeeded");
-            }).catchError((onError) {
-              print("[Jyn] add geolocation: $newStore(${p.latitude},${p.longitude}) failed");
+            this._dbHelper.insertStore(p).then((id) {
+              String locationId = '$newStore $id';
+              Geolocation location = Geolocation(latitude: p.latitude,
+                  longitude: p.longitude,
+                  radius: 500,
+                  id: locationId);
+              Geofence.addGeolocation(location, GeolocationEvent.entry).then((
+                  onValue) {
+                print("[PriceSearch] add geolocation: $locationId(${p
+                    .latitude},${p.longitude}) succeeded");
+              }).catchError((onError) {
+                print("[PriceSearch] add geolocation: $locationId(${p
+                    .latitude},${p.longitude}) failed");
+              });
             });
           }
         });
@@ -257,9 +263,6 @@ class _PriceSearchState extends State<PriceSearch> {
 
   void onPressDelete(int index) async {
     await this._dbHelper.deleteProduct(_products[index].name);
-    this._dbHelper.getAllProducts().then((items){
-      print(items);
-    });
 
     setState(() {
       _products[index].isDeleted = true;
@@ -272,8 +275,10 @@ class _PriceSearchState extends State<PriceSearch> {
               Add nearby stores to geofence.
      */
     if (!await this._dbHelper.isStoreInProductTable(_products[index].store)) {
-      Geofence.removeAllGeolocations();
-
+      List<Place> stores = await this._dbHelper.getAllStores();
+      for(var p in stores){
+        print(p.placeId);
+      }
     }
   }
 
