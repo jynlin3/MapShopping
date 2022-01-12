@@ -23,16 +23,19 @@ class ScreenArguments {
 
   ScreenArguments(this.title);
 }
+
 class PriceSearch extends StatefulWidget {
   static const routeName = '/priceSearch';
 
   @override
   _PriceSearchState createState() => _PriceSearchState();
 }
+
 class _PriceSearchState extends State<PriceSearch> {
   late WebViewPlusController _controller;
 
   List<Product> _products = [];
+
   // late List<Product> _products;
   String _title = "";
 
@@ -46,85 +49,92 @@ class _PriceSearchState extends State<PriceSearch> {
 
   @override
   Widget build(BuildContext context) {
-    final ScreenArguments args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
+    final ScreenArguments args =
+        ModalRoute.of(context)!.settings.arguments as ScreenArguments;
     _title = args.title;
 
     executeAfterBuild();
 
     return Scaffold(
-      appBar: AppBar(title: Text(args.title)),
-      body: Column(
-        children: <Widget>[
-          Visibility(
-              visible: false,
-              maintainState: true,
-              child: SizedBox(
-                  height: 1,
-                  child: WebViewPlus(
-                    initialUrl: SafewayParser.getURL(args.title),
-                    javascriptMode: JavascriptMode.unrestricted,
-                    onWebViewCreated: (controller){
-                      this._controller = controller;
-                    },
-                    // onPageStarted: (url){
-                    //   stopWatch.start();
-                    // },
-                    onPageFinished: (url){
-                      print('Page loaded: $url');
-                      // fetchSafewayData();
-                    },
-              ))),
-          (_products == null)
-              ? Center(child: CircularProgressIndicator())
-              : Expanded(
-                  child: ListView.builder(
+        appBar: AppBar(title: Text(args.title)),
+        body: Column(
+          children: <Widget>[
+            Visibility(
+                visible: false,
+                maintainState: true,
+                child: SizedBox(
+                    height: 1,
+                    child: WebViewPlus(
+                      initialUrl: SafewayParser.getURL(args.title),
+                      javascriptMode: JavascriptMode.unrestricted,
+                      onWebViewCreated: (controller) {
+                        this._controller = controller;
+                      },
+                      // onPageStarted: (url){
+                      //   stopWatch.start();
+                      // },
+                      onPageFinished: (url) {
+                        print('Page loaded: $url');
+                        // fetchSafewayData();
+                      },
+                    ))),
+            (_products == null)
+                ? Center(child: CircularProgressIndicator())
+                : Expanded(
+                    child: ListView.builder(
                         itemCount: this._products.length,
-                        itemBuilder: (BuildContext context, int index){
+                        itemBuilder: (BuildContext context, int index) {
                           return Card(
-                              clipBehavior: Clip.antiAlias,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                    FadeInImage.memoryNetwork(
-                                      height: 150,
-                                      width: 150,
-                                      fit: BoxFit.contain,
-                                      alignment: Alignment.centerLeft,
-                                      image: this._products[index].imageURL,
-                                      placeholder: kTransparentImage,
-                                  ),
-                                  Expanded(
-                                      child:Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                            clipBehavior: Clip.antiAlias,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                FadeInImage.memoryNetwork(
+                                  height: 150,
+                                  width: 150,
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.centerLeft,
+                                  image: this._products[index].imageURL,
+                                  placeholder: kTransparentImage,
+                                ),
+                                Expanded(
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          Text(this._products[index].name,
-                                              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text("${this._products[index].store}  ${this._products[index].distance}",
-                                              style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                                          SizedBox(height: 8),
-                                          Text("\$ ${this._products[index].price}",
-                                              style: const TextStyle(fontSize: 21, color: Colors.black, fontWeight: FontWeight.bold)),
-                                          IconButton(
-                                              icon: this._products[index].isDeleted ? Icon(Icons.bookmark_border) : Icon(Icons.bookmark),
-                                              onPressed: () {
-                                                if(this._products[index].isDeleted)
-                                                  onPressAdd(index);
-                                                else
-                                                  onPressDelete(index);
-                                              }
-                                          ),
-                                        ]
-                                    )),
-                                ],
-                              ),
+                                      Text(this._products[index].name,
+                                          style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.bold)),
+                                      SizedBox(height: 4),
+                                      Text(
+                                          "${this._products[index].store}  ${this._products[index].distance}",
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey)),
+                                      SizedBox(height: 8),
+                                      Text("\$ ${this._products[index].price}",
+                                          style: const TextStyle(
+                                              fontSize: 21,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold)),
+                                      IconButton(
+                                          icon: this._products[index].isDeleted
+                                              ? Icon(Icons.bookmark_border)
+                                              : Icon(Icons.bookmark),
+                                          onPressed: () {
+                                            if (this._products[index].isDeleted)
+                                              onPressAdd(index);
+                                            else
+                                              onPressDelete(index);
+                                          }),
+                                    ])),
+                              ],
+                            ),
                           );
-                        }
-              )),
-        ],
-      )
-    );
+                        })),
+          ],
+        ));
   }
 
   // void fetchSafewayData() async {
@@ -186,11 +196,11 @@ class _PriceSearchState extends State<PriceSearch> {
   Future<void> fetchRecommendations() async {
     var saved_products = await this._dbHelper.getAllProducts();
     var user_detail_list = saved_products.map((p) => p.name);
-    var recommendations = await PriceComparisonEngineParser.fetch(_title, user_detail_list.join(" "));
+    var recommendations = await PriceComparisonEngineParser.fetch(
+        _title, user_detail_list.join(" "));
     for (var r in recommendations) {
       for (var p in saved_products) {
-        if (r.name == p.name)
-          r.isDeleted = false;
+        if (r.name == p.name) r.isDeleted = false;
       }
     }
 
@@ -214,10 +224,10 @@ class _PriceSearchState extends State<PriceSearch> {
     }
   }
 
-  void onPressAdd(int index) async{
+  void onPressAdd(int index) async {
     // Check if the store is added.
     String newStore = _products[index].store;
-    if(await this._dbHelper.isStoreInProductTable(newStore)){
+    if (await this._dbHelper.isStoreInProductTable(newStore)) {
       print("[PriceSearch] The store: $newStore is in product table.");
       newStore = "";
     }
@@ -227,7 +237,7 @@ class _PriceSearchState extends State<PriceSearch> {
     });
     this._dbHelper.insertProduct(_products[index]);
 
-    if(newStore.isNotEmpty) {
+    if (newStore.isNotEmpty) {
       Geofence.getCurrentLocation().then((coordinate) {
         if (coordinate == null) {
           print("[PriceSearch] Failed to get current location.");
@@ -236,23 +246,24 @@ class _PriceSearchState extends State<PriceSearch> {
 
         // Find nearby stores in 6 miles (10 min drive).
         GoogleMapsService.getPlaces(
-            coordinate!.latitude, coordinate!.longitude, newStore, 10000)
+                coordinate!.latitude, coordinate!.longitude, newStore, 10000)
             .then((places) {
           // Add nearby stores to db and geofence
           for (var p in places) {
             this._dbHelper.insertStore(p).then((id) {
               String locationId = '$newStore $id';
-              Geolocation location = Geolocation(latitude: p.latitude,
+              Geolocation location = Geolocation(
+                  latitude: p.latitude,
                   longitude: p.longitude,
                   radius: 500,
                   id: locationId);
-              Geofence.addGeolocation(location, GeolocationEvent.entry).then((
-                  onValue) {
-                print("[PriceSearch] add geolocation: $locationId(${p
-                    .latitude},${p.longitude}) succeeded");
+              Geofence.addGeolocation(location, GeolocationEvent.entry)
+                  .then((onValue) {
+                print(
+                    "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) succeeded");
               }).catchError((onError) {
-                print("[PriceSearch] add geolocation: $locationId(${p
-                    .latitude},${p.longitude}) failed");
+                print(
+                    "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) failed");
               });
             });
           }
@@ -268,19 +279,30 @@ class _PriceSearchState extends State<PriceSearch> {
       _products[index].isDeleted = true;
     });
 
-    //TODO: Check if the store should be deleted.
-    //TODO: Remove all stores.
-    /*TODO: Iterate over bookmarked stores
-              Find nearby stores in 15 miles (30 min drive).
-              Add nearby stores to geofence.
-     */
+    // Check if the store should be deleted.
     if (!await this._dbHelper.isStoreInProductTable(_products[index].store)) {
-      List<Place> stores = await this._dbHelper.getAllStores();
-      for(var p in stores){
-        print(p.placeId);
-      }
+      // Remove all stores from geofence.
+      Geofence.removeAllGeolocations();
+      this._dbHelper.deleteStoresByName(_products[index].store).then((onValue) {
+        // Iterate over the remaining stores and add them to geofence.
+        this._dbHelper.getAllStores().then((stores) {
+          for (var store in stores) {
+            Geolocation location = Geolocation(
+                latitude: store.latitude,
+                longitude: store.longitude,
+                radius: 500,
+                id: store.placeId);
+            Geofence.addGeolocation(location, GeolocationEvent.entry)
+                .then((onValue) {
+              print(
+                  "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) succeeded.");
+            }).catchError((onError) {
+              print(
+                  "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) failed.");
+            });
+          }
+        });
+      });
     }
   }
-
-
 }

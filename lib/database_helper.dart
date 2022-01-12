@@ -173,9 +173,18 @@ class DatabaseHelper {
   Future<List<Place>> getAllStores() async {
     Database? db = await instance.database;
     final List<Map<String, dynamic>> maps = await db!.query(
-        storeTable, where: '$columnIsDeleted = ?', whereArgs: [0]);
+        storeTable,
+        where: '$columnIsDeleted = ?',
+        whereArgs: [0]
+    );
     return List.generate(maps.length, (i){
       return Place.fromDB(maps[i]);
     });
   }
+
+  Future<void> deleteStoresByName(String storeName) async{
+    Database? db = await instance.database;
+    await db!.delete(storeTable, where: '$columnName LIKE ?', whereArgs: ['$storeName%']);
+  }
+
 }
