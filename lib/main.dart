@@ -409,7 +409,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Geofence.initialize();
     Geofence.startListening(GeolocationEvent.entry, (entry) {
-      scheduleNotification("Entry of geolocation",
+      scheduleNotification("Map Shopping",
           "You are near ${entry.id.split(
               " ")[0]}. Buy your grocery at the store.");
     });
