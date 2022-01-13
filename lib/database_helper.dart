@@ -16,14 +16,14 @@ const columnImageURL = 'imageUrl';
 const columnPrice = 'price';
 
 class Item {
-  final int id;
+  final int? id;
   final String title;
   final bool isDeleted;
 
   Item({required this.id, required this.title, required this.isDeleted});
 
   Item.random(String title, bool isDeleted) :
-    this.id = -1,
+    this.id = null,
     this.title = title,
     this.isDeleted = isDeleted;
 
