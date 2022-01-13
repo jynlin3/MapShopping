@@ -1,9 +1,9 @@
 class Store{
-  String name;
-  String locationId;
-  double latitude;
-  double longitude;
-  String distance;
+  String name = "";
+  String locationId = "";
+  double latitude = 180;
+  double longitude = 90;
+  String distance = "";
 
   Store(String name, String locationId, double latitude, double longitude, String distance){
     this.name = name;

@@ -16,9 +16,10 @@ class GoogleMapsService {
     return json['google_api_key'];
   }
 
-  static Future<List<Place>> getPlaces(double lat, double lng) async{
+  // Defines the distance (in meters)
+  static Future<List<Place>> getPlaces(double lat, double lng, String keyword, int distance) async{
     var key = await _getAPIKey();
-    var response = await get('$_url_base/place/nearbysearch/json?location=$lat,$lng&keyword=supermarket&distance=1500&rankby=distance&key=$key');
+    var response = await get('$_url_base/place/nearbysearch/json?location=$lat,$lng&keyword=$keyword&distance=$distance&rankby=distance&key=$key');
     var json = jsonDecode(response.body);
     var jsonResults = json['results'] as List;
     return jsonResults.map((place) => Place.fromJson(place)).toList();
