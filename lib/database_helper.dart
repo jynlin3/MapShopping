@@ -12,6 +12,8 @@ const columnStore = 'store';
 const columnLat = 'latitude';
 const columnLong = 'longitude';
 const columnName = 'name';
+const columnImageURL = 'imageUrl';
+const columnPrice = 'price';
 
 class Item {
   final int id;
@@ -84,7 +86,9 @@ class DatabaseHelper {
         $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
         $columnTitle TEXT, 
         $columnIsDeleted INTEGER,
-        $columnStore TEXT)
+        $columnStore TEXT,
+        $columnImageURL TEXT,
+        $columnPrice REAL)
     ''');
     await db.execute('''
       CREATE TABLE $storeTable( 

@@ -6,8 +6,10 @@ import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 import 'database_helper.dart';
+import 'models/product.dart';
 import 'price_search.dart';
 import 'services/googlemaps.dart';
 
@@ -83,6 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     new FlutterLocalNotificationsPlugin();
 
+  List<Product> _products = [];
+
   @override
   void initState(){
     super.initState();
@@ -124,11 +128,14 @@ class _MyHomePageState extends State<MyHomePage> {
                             children: <Widget>[
                               IconButton(
                                   icon: Icon(Icons.search),
-                                  onPressed: () {Navigator.pushNamed(
-                                    context,
-                                    PriceSearch.routeName,
-                                    arguments: ScreenArguments(this._items[index].title),
-                                  );}
+                                  onPressed: () async{
+                                    await Navigator.pushNamed(
+                                      context,
+                                      PriceSearch.routeName,
+                                      arguments: ScreenArguments(this._items[index].title),
+                                    );
+                                    setupList();
+                                  }
                               ),
                               IconButton(
                                 icon: Icon(Icons.delete, color: Colors.red),
@@ -161,6 +168,49 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               }
             ),
+          // bookmark page
+          ListView.builder(
+              itemCount: this._products.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      FadeInImage.memoryNetwork(
+                        height: 150,
+                        width: 150,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.centerLeft,
+                        image: this._products[index].imageURL,
+                        placeholder: kTransparentImage,
+                      ),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(this._products[index].name,
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold)),
+                                SizedBox(height: 4),
+                                Text(
+                                    "${this._products[index].store}  ${this._products[index].distance}",
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey)),
+                                SizedBox(height: 8),
+                                Text("\$ ${this._products[index].price}",
+                                    style: const TextStyle(
+                                        fontSize: 21,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
+                              ])),
+                    ],
+                  ),
+                );
+              }),
           // settings page
           Center(child: Text('Settings')),
           // navigation map page
@@ -194,6 +244,11 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.home),
             label: 'Home',
             backgroundColor: Colors.blue
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.bookmarks),
+              label: 'Bookmarks',
+              backgroundColor: Colors.blue
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.settings),
@@ -267,6 +322,11 @@ class _MyHomePageState extends State<MyHomePage> {
     var items = await this._dbHelper.getAllItems();
     setState(() {
       _items = items;
+    });
+
+    var products = await this._dbHelper.getAllProducts();
+    setState((){
+      _products = products;
     });
   }
 

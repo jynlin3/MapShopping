@@ -25,7 +25,9 @@ class Product {
       columnId: null,
       columnTitle: this.name,
       columnIsDeleted: isDeleted ? 1 : 0,
-      columnStore: this.store
+      columnStore: this.store,
+      columnImageURL: this.imageURL,
+      columnPrice: this.price
     };
   }
 
@@ -34,5 +36,7 @@ class Product {
         id = map[columnId],
         name = map[columnTitle],
         isDeleted = map[columnIsDeleted] == 1,
-        store = map[columnStore];
+        store = map[columnStore],
+        imageURL = map[columnImageURL],
+        price = map[columnPrice];
 }
