@@ -83,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // final ScrollController _scrollController = ScrollController();
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  new FlutterLocalNotificationsPlugin();
+      new FlutterLocalNotificationsPlugin();
 
   List<Product> _products = [];
 
@@ -115,59 +115,68 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           // home page
           ListView.builder(
-            // controller: _scrollController,
-            // reverse: true,
+              // controller: _scrollController,
+              // reverse: true,
               itemCount: this._items.length,
               itemBuilder: (BuildContext context, int index) {
                 return Container(
                     key: Key(this._items[index].title),
                     child: Card(
                         child: ListTile(
-                          title: Text(this._items[index].title),
-                          trailing: Row(children: <Widget>[
-                            IconButton(
-                                icon: Icon(Icons.search),
-                                onPressed: () async {
-                                  await Navigator.pushNamed(
-                                    context,
-                                    PriceSearch.routeName,
-                                    arguments:
+                      leading: Checkbox(
+                          value: this._items[index].isChecked,
+                          onChanged: (newValue) {
+                            onClickCheckbox(this._items[index], newValue);
+                          }),
+                      title: Text(this._items[index].title,
+                          style: TextStyle(
+                              decoration: this._items[index].isChecked
+                                  ? TextDecoration.lineThrough
+                                  : null)),
+                      trailing: Row(children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.search),
+                            onPressed: () async {
+                              await Navigator.pushNamed(
+                                context,
+                                PriceSearch.routeName,
+                                arguments:
                                     ScreenArguments(this._items[index].title),
-                                  );
-                                  setupList();
-                                }),
-                            IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                onPressDelete(this._items[index]);
-                              },
-                            ),
-                          ], mainAxisSize: MainAxisSize.min),
-                          onTap: () {
-                            _input = this._items[index].title;
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Edit Shopping Item'),
-                                    content: TextField(
-                                      controller:
-                                      TextEditingController(text: _input),
-                                      onChanged: (String value) {
-                                        _input = value;
-                                      },
-                                    ),
-                                    actions: <Widget>[
-                                      FlatButton(
-                                          onPressed: () {
-                                            onPressEdit(this._items[index]);
-                                          },
-                                          child: Text('Edit'))
-                                    ],
-                                  );
-                                });
+                              );
+                              setupList();
+                            }),
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            onPressDelete(this._items[index]);
                           },
-                        )));
+                        ),
+                      ], mainAxisSize: MainAxisSize.min),
+                      onTap: () {
+                        _input = this._items[index].title;
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Edit Shopping Item'),
+                                content: TextField(
+                                  controller:
+                                      TextEditingController(text: _input),
+                                  onChanged: (String value) {
+                                    _input = value;
+                                  },
+                                ),
+                                actions: <Widget>[
+                                  FlatButton(
+                                      onPressed: () {
+                                        onPressEdit(this._items[index]);
+                                      },
+                                      child: Text('Edit'))
+                                ],
+                              );
+                            });
+                      },
+                    )));
               }),
           // bookmark page
           ListView.builder(
@@ -190,23 +199,21 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(this._products[index].name,
-                                    style: const TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold)),
-                                SizedBox(height: 4),
-                                Text(
-                                    "${this._products[index].store}  ${this
-                                        ._products[index].distance}",
-                                    style: const TextStyle(
-                                        fontSize: 13, color: Colors.grey)),
-                                SizedBox(height: 8),
-                                Text("\$ ${this._products[index].price}",
-                                    style: const TextStyle(
-                                        fontSize: 21,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold)),
-                              ])),
+                            Text(this._products[index].name,
+                                style: const TextStyle(
+                                    fontSize: 17, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 4),
+                            Text(
+                                "${this._products[index].store}  ${this._products[index].distance}",
+                                style: const TextStyle(
+                                    fontSize: 13, color: Colors.grey)),
+                            SizedBox(height: 8),
+                            Text("\$ ${this._products[index].price}",
+                                style: const TextStyle(
+                                    fontSize: 21,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                          ])),
                     ],
                   ),
                 );
@@ -262,33 +269,33 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
-        onPressed: () {
-          _input = '';
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Add Shopping Item'),
-                  content: TextField(
-                    onChanged: (String value) {
-                      _input = value;
-                    },
-                  ),
-                  actions: <Widget>[
-                    FlatButton(onPressed: onPressAdd, child: Text('Add'))
-                  ],
-                );
-              });
-        },
-        child: Icon(Icons.add, color: Colors.white),
-      )
+              onPressed: () {
+                _input = '';
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Add Shopping Item'),
+                        content: TextField(
+                          onChanged: (String value) {
+                            _input = value;
+                          },
+                        ),
+                        actions: <Widget>[
+                          FlatButton(onPressed: onPressAdd, child: Text('Add'))
+                        ],
+                      );
+                    });
+              },
+              child: Icon(Icons.add, color: Colors.white),
+            )
           : null,
     );
   }
 
   Future<GeolocationStatus> _checkLocationPermission() async {
     GeolocationStatus geolocationStatus =
-    await Geolocator().checkGeolocationPermissionStatus();
+        await Geolocator().checkGeolocationPermissionStatus();
     return geolocationStatus;
   }
 
@@ -307,9 +314,9 @@ class _MyHomePageState extends State<MyHomePage> {
     this
         ._mapController
         .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(currentPos.latitude, currentPos.longitude),
-      zoom: 13.0,
-    )));
+          target: LatLng(currentPos.latitude, currentPos.longitude),
+          zoom: 13.0,
+        )));
 
     getMarkers(currentPos.latitude, currentPos.longitude);
   }
@@ -327,9 +334,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onPressDelete(Item item) async {
-    var id = await this
-        ._dbHelper
-        .updateItem(Item(id: item.id, title: item.title, isDeleted: true));
+    var id = await this._dbHelper.updateItem(Item(
+        id: item.id, title: item.title, isDeleted: true, isChecked: false));
     print('update row id: $id');
 
     this._dbHelper.getAllItems().then((items) {
@@ -360,9 +366,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onPressEdit(Item item) async {
-    var id = await this
-        ._dbHelper
-        .updateItem(Item(id: item.id, title: this._input, isDeleted: false));
+    var id = await this._dbHelper.updateItem(Item(
+        id: item.id, title: this._input, isDeleted: false, isChecked: false));
     print('update row id: $id');
 
     this._dbHelper.getAllItems().then((items) {
@@ -374,13 +379,27 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.of(context, rootNavigator: true).pop();
   }
 
+  void onClickCheckbox(Item item, bool? isChecked) async {
+    var id = await this._dbHelper.updateItem(Item(
+        id: item.id,
+        title: item.title,
+        isDeleted: false,
+        isChecked: isChecked!));
+    print('update row id: $id');
+
+    this._dbHelper.getAllItems().then((items) {
+      setState(() {
+        _items = items;
+      });
+    });
+  }
+
   Future<void> getMarkers(double lat, double lng) async {
     var places =
-    await GoogleMapsService.getPlaces(lat, lng, 'supermarket', 1500);
+        await GoogleMapsService.getPlaces(lat, lng, 'supermarket', 1500);
     for (var p in places) {
       print(
-          '${p.name}\t ${p.rating}(${p.userRatingCount}) ${p.openStatus} ${p
-              .latitude} ${p.longitude} ');
+          '${p.name}\t ${p.rating}(${p.userRatingCount}) ${p.openStatus} ${p.latitude} ${p.longitude} ');
     }
 
     var markers = <Marker>[];
@@ -410,16 +429,15 @@ class _MyHomePageState extends State<MyHomePage> {
     Geofence.initialize();
     Geofence.startListening(GeolocationEvent.entry, (entry) {
       scheduleNotification("Map Shopping",
-          "You are near ${entry.id.split(
-              " ")[0]}. Buy your grocery at the store.");
+          "You are near ${entry.id.split(" ")[0]}. Buy your grocery at the store.");
     });
   }
 
   Future<void> initLocalNotificationPlugin() async {
     var initializationSettingsAndroid =
-    new AndroidInitializationSettings('@mipmap/ic_launcher');
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
     var initializationSettingsIOS =
-    IOSInitializationSettings(onDidReceiveLocalNotification: null);
+        IOSInitializationSettings(onDidReceiveLocalNotification: null);
     var initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings,

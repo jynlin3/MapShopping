@@ -14,31 +14,36 @@ const columnLong = 'longitude';
 const columnName = 'name';
 const columnImageURL = 'imageUrl';
 const columnPrice = 'price';
+const columnIsChecked = 'isChecked';
 
 class Item {
   final int? id;
   final String title;
   final bool isDeleted;
+  final bool isChecked;
 
-  Item({required this.id, required this.title, required this.isDeleted});
+  Item({required this.id, required this.title, required this.isDeleted, required this.isChecked});
 
   Item.random(String title, bool isDeleted) :
     this.id = null,
     this.title = title,
-    this.isDeleted = isDeleted;
+    this.isDeleted = isDeleted,
+    this.isChecked = false;
 
   // Convert a Map into a Item
   Item.fromDB(Map<String, dynamic> map):
       id = map[columnId],
       title = map[columnTitle],
-      isDeleted = map[columnIsDeleted] == 1;
+      isDeleted = map[columnIsDeleted] == 1,
+      isChecked = map[columnIsChecked] == 1;
 
   // Convert a Item into a Map.
   Map<String, dynamic> toMap(){
     return {
       columnId: id,
       columnTitle: title,
-      columnIsDeleted: isDeleted ? 1: 0
+      columnIsDeleted: isDeleted ? 1: 0,
+      columnIsChecked: isChecked ? 1: 0
     };
   }
 }
@@ -79,7 +84,8 @@ class DatabaseHelper {
       CREATE TABLE $itemTable( 
         $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
         $columnTitle TEXT, 
-        $columnIsDeleted INTEGER)
+        $columnIsDeleted INTEGER,
+        $columnIsChecked INTEGER)
     ''');
     await db.execute('''
       CREATE TABLE $productTable( 
@@ -109,8 +115,13 @@ class DatabaseHelper {
 
   Future<List<Item>> getAllItems() async {
     Database? db = await instance.database;
-    final sql = 'SELECT * FROM $itemTable WHERE $columnIsDeleted == 0';
-    final List<Map<String, dynamic>> maps = await db!.rawQuery(sql);
+    // final sql = 'SELECT * FROM $itemTable WHERE $columnIsDeleted == 0';
+    // final List<Map<String, dynamic>> maps = await db!.rawQuery(sql);
+    final List<Map<String, dynamic>> maps = await db!.query(
+        itemTable,
+        where: '$columnIsDeleted = ?',
+        whereArgs: [0],
+        orderBy: '$columnIsChecked');
     return List.generate(maps.length, (i){
       return Item.fromDB(maps[i]);
     });
