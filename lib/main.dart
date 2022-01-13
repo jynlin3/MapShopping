@@ -406,7 +406,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Geofence.initialize();
     Geofence.startListening(GeolocationEvent.entry, (entry) {
-      scheduleNotification("Entry of geolocation", "Welcome to: ${entry.id}");
+      scheduleNotification("Entry of geolocation",
+          "You are near ${entry.id.split(" ")[0]}. Buy your grocery at the store.");
     });
   }
 
@@ -418,7 +419,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: null);
+        onSelectNotification: onSelectNotification);
   }
 
   void scheduleNotification(String title, String subtitle) {
@@ -437,5 +438,10 @@ class _MyHomePageState extends State<MyHomePage> {
           rng.nextInt(1000000), title, subtitle, platformChannelSpecifics,
           payload: 'item x');
     });
+  }
+
+  Future<dynamic> onSelectNotification(String? payload) async {
+    this._pageController.animateToPage(1,
+        duration: Duration(milliseconds: 1), curve: Curves.easeIn);
   }
 }
