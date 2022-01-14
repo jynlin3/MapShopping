@@ -9,14 +9,14 @@ import 'package:html/parser.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import 'database_helper.dart';
-import 'models/place.dart';
-import 'models/product.dart';
-import 'services/googlemaps.dart';
-import 'services/kroger.dart';
-import 'services/pricecomparisonengine.dart';
-import 'services/safeway_parser.dart';
-import 'services/target.dart';
+import '../../database_helper.dart';
+import '../../models/place.dart';
+import '../../models/product.dart';
+import '../../services/googlemaps.dart';
+import '../../services/kroger.dart';
+import '../../services/pricecomparisonengine.dart';
+import '../../services/safeway_parser.dart';
+import '../../services/target.dart';
 
 class ScreenArguments {
   final String title;
