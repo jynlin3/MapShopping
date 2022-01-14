@@ -235,7 +235,7 @@ class _PriceSearchState extends State<PriceSearch> {
     setState(() {
       _products[index].isDeleted = false;
     });
-    this._dbHelper.insertProduct(_products[index]);
+    this._dbHelper.insertProduct(_products[index], this._title);
 
     if (newStore.isNotEmpty) {
       Geofence.getCurrentLocation().then((coordinate) {
@@ -273,7 +273,7 @@ class _PriceSearchState extends State<PriceSearch> {
   }
 
   void onPressDelete(int index) async {
-    await this._dbHelper.deleteProduct(_products[index].name);
+    await this._dbHelper.deleteProductByName(_products[index].name);
 
     setState(() {
       _products[index].isDeleted = true;

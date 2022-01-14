@@ -334,15 +334,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onPressDelete(Item item) async {
-    var id = await this._dbHelper.updateItem(Item(
+    // Update DB
+    await this._dbHelper.updateItem(Item(
         id: item.id, title: item.title, isDeleted: true, isChecked: false));
-    print('update row id: $id');
+    await this._dbHelper.deleteProductsByItemName(item.title);
 
-    this._dbHelper.getAllItems().then((items) {
-      setState(() {
-        _items = items;
-      });
-    });
+    // Update UI
+    setupList();
   }
 
   void onPressAdd() async {
@@ -380,18 +378,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onClickCheckbox(Item item, bool? isChecked) async {
-    var id = await this._dbHelper.updateItem(Item(
+    // Update DB
+    await this._dbHelper.updateItem(Item(
         id: item.id,
         title: item.title,
         isDeleted: false,
         isChecked: isChecked!));
-    print('update row id: $id');
+    await this._dbHelper.updateProductsByItemName(item.title, isChecked!);
 
-    this._dbHelper.getAllItems().then((items) {
-      setState(() {
-        _items = items;
-      });
-    });
+    // Update UI
+    setupList();
   }
 
   Future<void> getMarkers(double lat, double lng) async {

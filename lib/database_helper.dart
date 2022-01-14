@@ -15,6 +15,7 @@ const columnName = 'name';
 const columnImageURL = 'imageUrl';
 const columnPrice = 'price';
 const columnIsChecked = 'isChecked';
+const columnItemTitle = 'itemTitle';
 
 class Item {
   final int? id;
@@ -94,7 +95,8 @@ class DatabaseHelper {
         $columnIsDeleted INTEGER,
         $columnStore TEXT,
         $columnImageURL TEXT,
-        $columnPrice REAL)
+        $columnPrice REAL,
+        $columnItemTitle TEXT)
     ''');
     await db.execute('''
       CREATE TABLE $storeTable( 
@@ -147,9 +149,11 @@ class DatabaseHelper {
   }
 
   // Insert/Find/Update/Delete in productTable
-  Future<int> insertProduct(Product product) async{
+  Future<int> insertProduct(Product product, String itemTitle) async{
     Database? db = await instance.database;
-    return await db!.insert(productTable, product.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    Map<String, dynamic> productMap = product.toMap();
+    productMap[columnItemTitle] = itemTitle;
+    return await db!.insert(productTable, productMap, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Product>> getAllProducts() async {
@@ -161,11 +165,11 @@ class DatabaseHelper {
     });
   }
 
-  Future<void> deleteProduct(String name) async {
+  Future<void> deleteProductByName(String name) async {
     Database? db = await instance.database;
     await db!.delete(
         productTable,
-        where: 'title = ?',
+        where: '$columnTitle = ?',
         whereArgs: [name]
     );
   }
@@ -176,6 +180,22 @@ class DatabaseHelper {
         productTable,
         where: '$columnIsDeleted = ? AND $columnStore = ?',
         whereArgs: [0, store], limit: 1)).length > 0;
+  }
+
+  Future<void> deleteProductsByItemName(String itemName) async{
+    Database? db = await instance.database;
+    await db!.delete(
+        productTable, where: '$columnItemTitle = ?', whereArgs: [itemName]);
+  }
+
+  Future<void> updateProductsByItemName(String itemName, bool isTempDeleted) async{
+    Database? db = await instance.database;
+    await db!.update(
+        productTable,
+        {columnIsDeleted: isTempDeleted},
+        where: '$columnItemTitle = ?',
+        whereArgs: [itemName]
+    );
   }
 
   // Insert/Find/Update/Delete in storeTable
