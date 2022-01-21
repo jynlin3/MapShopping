@@ -5,16 +5,20 @@ import 'package:http/http.dart';
 import '../models/product.dart';
 
 class PriceComparisonEngineCore {
-  static const _api_base = 'https://us-central1-mapshopping.cloudfunctions.net';
+  static const _api_base = 'us-central1-mapshopping.cloudfunctions.net';
 
   static Future<dynamic> _getRecommendations(String searchTerm, String userDetail) async{
-    print("[Jyn]" + userDetail);
-    // userDetail = "";
-    var url = '$_api_base/recommendations_http?q=$searchTerm&user_detail=$userDetail';
+    // construct a Uri with query parameters
+    final queryParameters = {
+      'q': searchTerm,
+      'user_detail': userDetail
+    };
+    final uri = Uri.https(_api_base, '/recommendations_http', queryParameters);
+
     var headers = {
       'Accept': 'application/json'
     };
-    var response = await get(url, headers:headers);
+    var response = await get(uri, headers:headers);
 
     if (response.statusCode == 200){
       return json.decode(response.body);
@@ -32,6 +36,7 @@ class PriceComparisonEngineParser extends PriceComparisonEngineCore {
     List<Product> products = [];
     var jsonResponse = await PriceComparisonEngineCore._getRecommendations(searchTerm, userDetail);
     for (var product in jsonResponse['recommendations']){
+      print('[Jyn] ' + product['name']);
       products.add(Product(
         product['name'],
         product['price'] * 1.0,

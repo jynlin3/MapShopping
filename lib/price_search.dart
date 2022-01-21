@@ -197,7 +197,7 @@ class _PriceSearchState extends State<PriceSearch> {
     var saved_products = await this._dbHelper.getAllProducts();
     var user_detail_list = saved_products.map((p) => p.name);
     var recommendations = await PriceComparisonEngineParser.fetch(
-        _title, user_detail_list.join(" "));
+        _title, user_detail_list.join(","));
     for (var r in recommendations) {
       for (var p in saved_products) {
         if (r.name == p.name) r.isDeleted = false;
