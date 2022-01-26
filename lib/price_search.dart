@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
@@ -237,38 +238,42 @@ class _PriceSearchState extends State<PriceSearch> {
     });
     this._dbHelper.insertProduct(_products[index], this._title);
 
-    if (newStore.isNotEmpty) {
-      Geofence.getCurrentLocation().then((coordinate) {
-        if (coordinate == null) {
-          print("[PriceSearch] Failed to get current location.");
-          return;
-        }
-
-        // Find nearby stores in 6 miles (10 min drive).
-        GoogleMapsService.getPlaces(
-                coordinate!.latitude, coordinate!.longitude, newStore, 10000)
-            .then((places) {
-          // Add nearby stores to db and geofence
-          for (var p in places) {
-            this._dbHelper.insertStore(p).then((id) {
-              String locationId = '$newStore $id';
-              Geolocation location = Geolocation(
-                  latitude: p.latitude,
-                  longitude: p.longitude,
-                  radius: 500,
-                  id: locationId);
-              Geofence.addGeolocation(location, GeolocationEvent.entry)
-                  .then((onValue) {
-                print(
-                    "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) succeeded");
-              }).catchError((onError) {
-                print(
-                    "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) failed");
-              });
-            });
+    if ((defaultTargetPlatform == TargetPlatform.iOS) || (defaultTargetPlatform == TargetPlatform.android)) {
+      if (newStore.isNotEmpty) {
+        Geofence.getCurrentLocation().then((coordinate) {
+          if (coordinate == null) {
+            print("[PriceSearch] Failed to get current location.");
+            return;
           }
+
+          // Find nearby stores in 6 miles (10 min drive).
+          GoogleMapsService.getPlaces(
+              coordinate!.latitude, coordinate!.longitude, newStore, 10000)
+              .then((places) {
+            // Add nearby stores to db and geofence
+            for (var p in places) {
+              this._dbHelper.insertStore(p).then((id) {
+                String locationId = '$newStore $id';
+                Geolocation location = Geolocation(
+                    latitude: p.latitude,
+                    longitude: p.longitude,
+                    radius: 500,
+                    id: locationId);
+                Geofence.addGeolocation(location, GeolocationEvent.entry)
+                    .then((onValue) {
+                  print(
+                      "[PriceSearch] add geolocation: $locationId(${p
+                          .latitude},${p.longitude}) succeeded");
+                }).catchError((onError) {
+                  print(
+                      "[PriceSearch] add geolocation: $locationId(${p
+                          .latitude},${p.longitude}) failed");
+                });
+              });
+            }
+          });
         });
-      });
+      }
     }
   }
 

@@ -36,7 +36,6 @@ class PriceComparisonEngineParser extends PriceComparisonEngineCore {
     List<Product> products = [];
     var jsonResponse = await PriceComparisonEngineCore._getRecommendations(searchTerm, userDetail);
     for (var product in jsonResponse['recommendations']){
-      print('[Jyn] ' + product['name']);
       products.add(Product(
         product['name'],
         product['price'] * 1.0,

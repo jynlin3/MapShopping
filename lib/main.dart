@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -82,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // final ScrollController _scrollController = ScrollController();
 
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       new FlutterLocalNotificationsPlugin();
 
   List<Product> _products = [];
@@ -93,8 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
     this._pageController = PageController();
     setupList();
 
-    initGeofence();
-    initLocalNotificationPlugin();
+    if ((defaultTargetPlatform == TargetPlatform.iOS) || (defaultTargetPlatform == TargetPlatform.android)) {
+      initGeofence();
+      initLocalNotificationPlugin();
+    }
   }
 
   @override
