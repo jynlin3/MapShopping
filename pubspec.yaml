@@ -38,6 +38,8 @@ dependencies:
   transparent_image: ^1.0.0
   flutter_geofence: ^0.4.1
   flutter_local_notifications : ^4.0.1
+  cloud_firestore: ^0.16.0
+  firebase_core: ^0.7.0
 
 dev_dependencies:
   flutter_test:

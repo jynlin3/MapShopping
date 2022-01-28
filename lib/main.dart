@@ -1,20 +1,24 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:map_shopper/services/firestore.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-import 'database_helper.dart';
+import 'models/item.dart';
 import 'models/product.dart';
 import 'price_search.dart';
 import 'services/googlemaps.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -79,7 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Item> _items = [];
   String _input = "";
-  final _dbHelper = DatabaseHelper.instance;
 
   // final ScrollController _scrollController = ScrollController();
 
@@ -325,22 +328,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void setupList() async {
-    var items = await this._dbHelper.getAllItems();
+    var items = await DatabaseService(uid: '123').getAllItems();
     setState(() {
       _items = items;
     });
 
-    var products = await this._dbHelper.getAllProducts();
-    setState(() {
-      _products = products;
-    });
+    // var products = await this._dbHelper.getAllProducts();
+    // setState(() {
+    //   _products = products;
+    // });
   }
 
   void onPressDelete(Item item) async {
     // Update DB
-    await this._dbHelper.updateItem(Item(
-        id: item.id, title: item.title, isDeleted: true, isChecked: false));
-    await this._dbHelper.deleteProductsByItemName(item.title);
+    // await this._dbHelper.updateItem(Item(
+    //     id: item.id, title: item.title, isDeleted: true, isChecked: false));
+    // await this._dbHelper.deleteProductsByItemName(item.title);
+
+    await DatabaseService(uid: '123').deleteItem(item);
 
     // Update UI
     setupList();
@@ -349,14 +354,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void onPressAdd() async {
     if (this._input.isEmpty) return;
 
-    final id = await this._dbHelper.insertItem(Item.random(_input, false));
-    print('inserted row id: $id');
+    await DatabaseService(uid: '123').insertItem(Item.random(_input, false));
 
-    this._dbHelper.getAllItems().then((items) {
-      setState(() {
-        _items = items;
-      });
-    });
+    setupList();
 
     Navigator.of(context, rootNavigator: true).pop();
     // this._scrollController.animateTo(
@@ -367,27 +367,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onPressEdit(Item item) async {
-    var id = await this._dbHelper.updateItem(Item(
-        id: item.id, title: this._input, isDeleted: false, isChecked: false));
-    print('update row id: $id');
+    item.title = this._input;
+    await DatabaseService(uid: '123').updateItem(item);
 
-    this._dbHelper.getAllItems().then((items) {
-      setState(() {
-        _items = items;
-      });
-    });
+    setupList();
 
     Navigator.of(context, rootNavigator: true).pop();
   }
 
   void onClickCheckbox(Item item, bool? isChecked) async {
     // Update DB
-    await this._dbHelper.updateItem(Item(
-        id: item.id,
-        title: item.title,
-        isDeleted: false,
-        isChecked: isChecked!));
-    await this._dbHelper.updateProductsByItemName(item.title, isChecked!);
+    // await this._dbHelper.updateItem(Item(
+    //     id: item.id,
+    //     title: item.title,
+    //     isDeleted: false,
+    //     isChecked: isChecked!));
+    // await this._dbHelper.updateProductsByItemName(item.title, isChecked!);
+    item.isChecked = isChecked!;
+    await DatabaseService(uid:'123').updateItem(item);
 
     // Update UI
     setupList();

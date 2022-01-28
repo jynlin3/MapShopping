@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'models/place.dart';
 import 'models/product.dart';
+import 'models/item.dart';
 
 const columnId = 'id';
 const columnTitle = 'title';
@@ -16,42 +17,7 @@ const columnImageURL = 'imageUrl';
 const columnPrice = 'price';
 const columnIsChecked = 'isChecked';
 const columnItemTitle = 'itemTitle';
-
-class Item {
-  final int? id;
-  final String title;
-  final bool isDeleted;
-  final bool isChecked;
-
-  Item(
-      {required this.id,
-      required this.title,
-      required this.isDeleted,
-      required this.isChecked});
-
-  Item.random(String title, bool isDeleted)
-      : this.id = null,
-        this.title = title,
-        this.isDeleted = isDeleted,
-        this.isChecked = false;
-
-  // Convert a Map into a Item
-  Item.fromDB(Map<String, dynamic> map)
-      : id = map[columnId],
-        title = map[columnTitle],
-        isDeleted = map[columnIsDeleted] == 1,
-        isChecked = map[columnIsChecked] == 1;
-
-  // Convert a Item into a Map.
-  Map<String, dynamic> toMap() {
-    return {
-      columnId: id,
-      columnTitle: title,
-      columnIsDeleted: isDeleted ? 1 : 0,
-      columnIsChecked: isChecked ? 1 : 0
-    };
-  }
-}
+const columnAddTime = 'addTime';
 
 class DatabaseHelper {
   static final _databaseName = 'MapShopping.db';
