@@ -12,24 +12,23 @@ import 'package:map_shopper/services/firestore.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import 'database_helper.dart';
-import 'models/place.dart';
-import 'models/product.dart';
-import 'services/googlemaps.dart';
-import 'services/kroger.dart';
-import 'services/pricecomparisonengine.dart';
-import 'services/safeway_parser.dart';
-import 'services/target.dart';
-
-class ScreenArguments {
-  final String title;
-  final String? referenceId;
-
-  ScreenArguments(this.title, this.referenceId);
-}
+import '../database_helper.dart';
+import '../models/product.dart';
+import '../services/googlemaps.dart';
+import '../services/pricecomparisonengine.dart';
+import '../services/safeway_parser.dart';
 
 class PriceSearch extends StatefulWidget {
-  static const routeName = '/priceSearch';
+  final String title;
+  final String referenceId;
+  final String uid;
+
+  const PriceSearch(
+      {Key? key,
+      required this.title,
+      required this.referenceId,
+      required this.uid})
+      : super(key: key);
 
   @override
   _PriceSearchState createState() => _PriceSearchState();
@@ -53,16 +52,22 @@ class _PriceSearchState extends State<PriceSearch> {
   final _dbHelper = DatabaseHelper.instance;
 
   @override
-  Widget build(BuildContext context) {
-    final ScreenArguments args =
-        ModalRoute.of(context)!.settings.arguments as ScreenArguments;
-    _title = args.title;
-    if (args.referenceId != null) _referenceId = args.referenceId!;
+  void initState() {
+    // The method will be called when the widget is inserted into the tree for the first time.
+    // It will only be called once. Usually, the data is initialized in this method.
 
+    super.initState();
+
+    _title = widget.title;
+    _referenceId = widget.referenceId;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     executeAfterBuild();
 
     return Scaffold(
-        appBar: AppBar(title: Text(args.title)),
+        appBar: AppBar(title: Text(_title)),
         body: Column(
           children: <Widget>[
             Visibility(
@@ -71,7 +76,7 @@ class _PriceSearchState extends State<PriceSearch> {
                 child: SizedBox(
                     height: 1,
                     child: WebViewPlus(
-                      initialUrl: SafewayParser.getURL(args.title),
+                      initialUrl: SafewayParser.getURL(_title),
                       javascriptMode: JavascriptMode.unrestricted,
                       onWebViewCreated: (controller) {
                         this._controller = controller;
@@ -200,7 +205,7 @@ class _PriceSearchState extends State<PriceSearch> {
   //   });
   // }
   Future<void> fetchRecommendations() async {
-    var saved_products = await DatabaseService(uid: '123').getAllProducts();
+    var saved_products = await DatabaseService(uid: widget.uid).getAllProducts();
     var user_detail_list = saved_products.map((p) => p.name);
     var recommendations = await PriceComparisonEngineParser.fetch(
         _title, user_detail_list.join(","));
@@ -244,7 +249,7 @@ class _PriceSearchState extends State<PriceSearch> {
       }
     }
 
-    DocumentReference newDoc = await DatabaseService(uid: '123')
+    DocumentReference newDoc = await DatabaseService(uid: widget.uid)
         .insertProduct(_products[index], this._referenceId);
 
     setState(() {
@@ -291,7 +296,7 @@ class _PriceSearchState extends State<PriceSearch> {
   }
 
   void onPressDelete(int index) async {
-    await DatabaseService(uid: '123').deleteProduct(_products[index]);
+    await DatabaseService(uid: widget.uid).deleteProduct(_products[index]);
 
     setState(() {
       _products[index].isDeleted = true;
