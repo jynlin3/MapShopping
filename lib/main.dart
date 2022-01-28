@@ -8,6 +8,7 @@ import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:map_shopper/database_helper.dart';
 import 'package:map_shopper/services/firestore.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -16,7 +17,7 @@ import 'models/product.dart';
 import 'price_search.dart';
 import 'services/googlemaps.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
@@ -97,7 +98,8 @@ class _MyHomePageState extends State<MyHomePage> {
     this._pageController = PageController();
     setupList();
 
-    if ((defaultTargetPlatform == TargetPlatform.iOS) || (defaultTargetPlatform == TargetPlatform.android)) {
+    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
+        (defaultTargetPlatform == TargetPlatform.android)) {
       initGeofence();
       initLocalNotificationPlugin();
     }
@@ -146,8 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               await Navigator.pushNamed(
                                 context,
                                 PriceSearch.routeName,
-                                arguments:
-                                    ScreenArguments(this._items[index].title),
+                                arguments: ScreenArguments(
+                                    this._items[index].title,
+                                    this._items[index].referenceId),
                               );
                               setupList();
                             }),
@@ -333,19 +336,18 @@ class _MyHomePageState extends State<MyHomePage> {
       _items = items;
     });
 
-    // var products = await this._dbHelper.getAllProducts();
-    // setState(() {
-    //   _products = products;
-    // });
+    var products = await DatabaseService(uid: '123').getUnpurchasedProducts();
+    setState(() {
+      _products = products;
+    });
   }
 
   void onPressDelete(Item item) async {
     // Update DB
-    // await this._dbHelper.updateItem(Item(
-    //     id: item.id, title: item.title, isDeleted: true, isChecked: false));
-    // await this._dbHelper.deleteProductsByItemName(item.title);
-
     await DatabaseService(uid: '123').deleteItem(item);
+    await DatabaseService(uid: '123').updateProductsByItemId(
+        item.referenceId == null ? "" : item.referenceId!,
+        {columnIsDeleted: 1});
 
     // Update UI
     setupList();
@@ -377,14 +379,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onClickCheckbox(Item item, bool? isChecked) async {
     // Update DB
-    // await this._dbHelper.updateItem(Item(
-    //     id: item.id,
-    //     title: item.title,
-    //     isDeleted: false,
-    //     isChecked: isChecked!));
-    // await this._dbHelper.updateProductsByItemName(item.title, isChecked!);
     item.isChecked = isChecked!;
-    await DatabaseService(uid:'123').updateItem(item);
+    await DatabaseService(uid: '123').updateItem(item);
+    await DatabaseService(uid: '123').updateProductsByItemId(
+        item.referenceId == null ? "" : item.referenceId!,
+        {columnIsDeleted: isChecked! ? 1 : 0});
 
     // Update UI
     setupList();

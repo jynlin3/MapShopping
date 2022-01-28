@@ -18,6 +18,7 @@ const columnPrice = 'price';
 const columnIsChecked = 'isChecked';
 const columnItemTitle = 'itemTitle';
 const columnAddTime = 'addTime';
+const columnItemId = 'itemId';
 
 class DatabaseHelper {
   static final _databaseName = 'MapShopping.db';

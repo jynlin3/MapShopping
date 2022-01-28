@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
 import 'package:html/parser.dart';
+import 'package:map_shopper/services/firestore.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -21,8 +23,9 @@ import 'services/target.dart';
 
 class ScreenArguments {
   final String title;
+  final String? referenceId;
 
-  ScreenArguments(this.title);
+  ScreenArguments(this.title, this.referenceId);
 }
 
 class PriceSearch extends StatefulWidget {
@@ -39,6 +42,7 @@ class _PriceSearchState extends State<PriceSearch> {
 
   // late List<Product> _products;
   String _title = "";
+  String _referenceId = "";
 
   bool _isKrogerFetched = false;
   bool _isTargetFetched = false;
@@ -53,6 +57,7 @@ class _PriceSearchState extends State<PriceSearch> {
     final ScreenArguments args =
         ModalRoute.of(context)!.settings.arguments as ScreenArguments;
     _title = args.title;
+    if (args.referenceId != null) _referenceId = args.referenceId!;
 
     executeAfterBuild();
 
@@ -195,13 +200,16 @@ class _PriceSearchState extends State<PriceSearch> {
   //   });
   // }
   Future<void> fetchRecommendations() async {
-    var saved_products = await this._dbHelper.getAllProducts();
+    var saved_products = await DatabaseService(uid: '123').getAllProducts();
     var user_detail_list = saved_products.map((p) => p.name);
     var recommendations = await PriceComparisonEngineParser.fetch(
         _title, user_detail_list.join(","));
     for (var r in recommendations) {
       for (var p in saved_products) {
-        if (r.name == p.name) r.isDeleted = false;
+        if (r.name == p.name) {
+          r.isDeleted = false;
+          r.referenceId = p.referenceId;
+        }
       }
     }
 
@@ -228,17 +236,24 @@ class _PriceSearchState extends State<PriceSearch> {
   void onPressAdd(int index) async {
     // Check if the store is added.
     String newStore = _products[index].store;
-    if (await this._dbHelper.isStoreInProductTable(newStore)) {
-      print("[PriceSearch] The store: $newStore is in product table.");
-      newStore = "";
+    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
+        (defaultTargetPlatform == TargetPlatform.android)) {
+      if (await this._dbHelper.isStoreInProductTable(newStore)) {
+        print("[PriceSearch] The store: $newStore is in product table.");
+        newStore = "";
+      }
     }
+
+    DocumentReference newDoc = await DatabaseService(uid: '123')
+        .insertProduct(_products[index], this._referenceId);
 
     setState(() {
       _products[index].isDeleted = false;
+      _products[index].referenceId = newDoc.id;
     });
-    this._dbHelper.insertProduct(_products[index], this._title);
 
-    if ((defaultTargetPlatform == TargetPlatform.iOS) || (defaultTargetPlatform == TargetPlatform.android)) {
+    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
+        (defaultTargetPlatform == TargetPlatform.android)) {
       if (newStore.isNotEmpty) {
         Geofence.getCurrentLocation().then((coordinate) {
           if (coordinate == null) {
@@ -248,7 +263,7 @@ class _PriceSearchState extends State<PriceSearch> {
 
           // Find nearby stores in 6 miles (10 min drive).
           GoogleMapsService.getPlaces(
-              coordinate!.latitude, coordinate!.longitude, newStore, 10000)
+                  coordinate!.latitude, coordinate!.longitude, newStore, 10000)
               .then((places) {
             // Add nearby stores to db and geofence
             for (var p in places) {
@@ -262,12 +277,10 @@ class _PriceSearchState extends State<PriceSearch> {
                 Geofence.addGeolocation(location, GeolocationEvent.entry)
                     .then((onValue) {
                   print(
-                      "[PriceSearch] add geolocation: $locationId(${p
-                          .latitude},${p.longitude}) succeeded");
+                      "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) succeeded");
                 }).catchError((onError) {
                   print(
-                      "[PriceSearch] add geolocation: $locationId(${p
-                          .latitude},${p.longitude}) failed");
+                      "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) failed");
                 });
               });
             }
@@ -278,36 +291,42 @@ class _PriceSearchState extends State<PriceSearch> {
   }
 
   void onPressDelete(int index) async {
-    await this._dbHelper.deleteProductByName(_products[index].name);
+    await DatabaseService(uid: '123').deleteProduct(_products[index]);
 
     setState(() {
       _products[index].isDeleted = true;
     });
 
-    // Check if the store should be deleted.
-    if (!await this._dbHelper.isStoreInProductTable(_products[index].store)) {
-      // Remove all stores from geofence.
-      Geofence.removeAllGeolocations();
-      this._dbHelper.deleteStoresByName(_products[index].store).then((onValue) {
-        // Iterate over the remaining stores and add them to geofence.
-        this._dbHelper.getAllStores().then((stores) {
-          for (var store in stores) {
-            Geolocation location = Geolocation(
-                latitude: store.latitude,
-                longitude: store.longitude,
-                radius: 500,
-                id: store.placeId);
-            Geofence.addGeolocation(location, GeolocationEvent.entry)
-                .then((onValue) {
-              print(
-                  "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) succeeded.");
-            }).catchError((onError) {
-              print(
-                  "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) failed.");
-            });
-          }
+    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
+        (defaultTargetPlatform == TargetPlatform.android)) {
+      // Check if the store should be deleted.
+      if (!await this._dbHelper.isStoreInProductTable(_products[index].store)) {
+        // Remove all stores from geofence.
+        Geofence.removeAllGeolocations();
+        this
+            ._dbHelper
+            .deleteStoresByName(_products[index].store)
+            .then((onValue) {
+          // Iterate over the remaining stores and add them to geofence.
+          this._dbHelper.getAllStores().then((stores) {
+            for (var store in stores) {
+              Geolocation location = Geolocation(
+                  latitude: store.latitude,
+                  longitude: store.longitude,
+                  radius: 500,
+                  id: store.placeId);
+              Geofence.addGeolocation(location, GeolocationEvent.entry)
+                  .then((onValue) {
+                print(
+                    "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) succeeded.");
+              }).catchError((onError) {
+                print(
+                    "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) failed.");
+              });
+            }
+          });
         });
-      });
+      }
     }
   }
 }
