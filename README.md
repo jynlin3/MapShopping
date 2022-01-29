@@ -13,4 +13,21 @@ A Location-aware Shopping List App with Shop Recommendation Notifications
         ```
   4. Copy `assets/config.json`.
   5. Add `MAPS_API_KEY= <key>` to `android/local.properties`.
-  6. Run the Flutter Project in Android Studio.
+  6. Run the Flutter Project in Android Studio with additional running args:
+     ```
+     # Android
+     --no-sound-null-safety
+     # web
+     --no-sound-null-safety --web-renderer html
+     ```
+- How to deploy
+  1. Install the Firebase CLI.
+  2. Set up a project directory using `firebase init`.
+  3. Build the Flutter web app.
+     ```
+     flutter build web --web-renderer html --release --no-sound-null-safety
+     ```
+  4. Deploy the web app.
+     ```
+     firebase deploy --only hosting
+     ```
