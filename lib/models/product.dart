@@ -3,27 +3,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../database_helper.dart';
 
 class Product {
-  String name = "";
-  double price = 0;
-  String store = "";
-  String imageURL = "";
-  String brand = "";
+  String name;
+  double price;
+  String store;
+  String imageURL;
+  String brand;
+  String itemId;
   String distance = "";
   int id = -1;
-  bool isDeleted = true;
+  bool isDeleted = true
 
   String? referenceId;
-  String? itemId;
 
-  Product(String name, double price, String store, String imageURL,
-      String brand, String distance) {
-    this.name = name;
-    this.price = price;
-    this.store = store;
-    this.imageURL = imageURL;
-    this.brand = brand;
-    this.distance = distance;
-  }
+  Product(
+      {required this.name,
+      required this.price,
+      required this.store,
+      required this.imageURL,
+      required this.brand,
+      required this.itemId});
 
   // Convert a Product into a Map.
   Map<String, dynamic> toMap() {
@@ -34,7 +32,8 @@ class Product {
       columnStore: this.store,
       columnImageURL: this.imageURL,
       columnPrice: this.price,
-      columnItemId: this.itemId == null ? "" : this.itemId,
+      columnBrand: this.brand,
+      columnItemId: this.itemId,
     };
   }
 
@@ -45,7 +44,9 @@ class Product {
         isDeleted = map[columnIsDeleted] == 1,
         store = map[columnStore],
         imageURL = map[columnImageURL],
-        price = map[columnPrice];
+        price = map[columnPrice],
+        brand = map[columnBrand],
+        itemId = "";
 
   // Convert a QueryDocumentSnapshot into a Product
   Product.fromFirestore(QueryDocumentSnapshot doc)
@@ -55,6 +56,7 @@ class Product {
         store = doc.data()[columnStore],
         imageURL = doc.data()[columnImageURL],
         price = doc.data()[columnPrice],
+        brand = doc.data()[columnBrand],
         itemId = doc.data()[columnItemId],
         referenceId = doc.id;
 }

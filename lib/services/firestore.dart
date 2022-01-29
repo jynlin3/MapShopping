@@ -3,9 +3,11 @@ import 'package:map_shopper/database_helper.dart';
 
 import '../models/item.dart';
 import '../models/product.dart';
+import '../models/search_log.dart';
 
 const collectionItem = 'Item';
 const collectionProduct = 'Product';
+const collectionSearchLog = 'SearchLog';
 
 class DatabaseService {
   final String uid;
@@ -48,28 +50,28 @@ class DatabaseService {
   Future<List<Product>> getAllProducts() async {
     QuerySnapshot querySnapshot =
         await userCollection.doc(uid).collection(collectionProduct).get();
-    return querySnapshot.docs
-        .map((doc) => Product.fromFirestore(doc)).toList();
+    return querySnapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
   }
 
   Future<List<Product>> getUnpurchasedProducts() async {
-    return (await getAllProducts()).where((product) => !product.isDeleted).toList();
+    return (await getAllProducts())
+        .where((product) => !product.isDeleted)
+        .toList();
   }
 
-  Future<DocumentReference> insertProduct(Product product, String itemId) {
+  Future<DocumentReference> insertProduct(Product product) {
     product.isDeleted = false;
-    product.itemId = itemId;
     return userCollection
         .doc(uid)
         .collection(collectionProduct)
         .add(product.toMap());
   }
 
-  Future deleteProduct(Product product) async {
+  Future deleteProduct(String productId) async {
     await userCollection
         .doc(uid)
         .collection(collectionProduct)
-        .doc(product.referenceId)
+        .doc(productId)
         .delete();
   }
 
@@ -78,9 +80,16 @@ class DatabaseService {
     QuerySnapshot querySnapshot =
         await userCollection.doc(uid).collection(collectionProduct).get();
     for (var doc in querySnapshot.docs) {
-      if(doc.data()[columnItemId] == itemId) {
+      if (doc.data()[columnItemId] == itemId) {
         await doc.reference.update(data);
       }
     }
+  }
+
+  Future<DocumentReference> insertSearchLog(SearchLog searchLog) {
+    return userCollection
+        .doc(uid)
+        .collection(collectionSearchLog)
+        .add(searchLog.toMap());
   }
 }

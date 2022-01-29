@@ -1,33 +1,23 @@
-import 'dart:convert';
 import 'dart:core';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_geofence/geofence.dart';
-import 'package:html/parser.dart';
+import 'package:map_shopper/models/search_log.dart';
 import 'package:map_shopper/services/firestore.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import '../database_helper.dart';
 import '../models/product.dart';
-import '../services/googlemaps.dart';
 import '../services/pricecomparisonengine.dart';
-import '../services/safeway_parser.dart';
 
 class PriceSearch extends StatefulWidget {
   final String title;
-  final String referenceId;
+  final String itemId;
   final String uid;
 
   const PriceSearch(
-      {Key? key,
-      required this.title,
-      required this.referenceId,
-      required this.uid})
+      {Key? key, required this.title, required this.itemId, required this.uid})
       : super(key: key);
 
   @override
@@ -35,21 +25,12 @@ class PriceSearch extends StatefulWidget {
 }
 
 class _PriceSearchState extends State<PriceSearch> {
-  late WebViewPlusController _controller;
-
-  List<Product> _products = [];
-
-  // late List<Product> _products;
   String _title = "";
-  String _referenceId = "";
+  String _itemId = "";
 
-  bool _isKrogerFetched = false;
-  bool _isTargetFetched = false;
-  bool _isRecommendationFetched = false;
-
-  // Stopwatch stopWatch = Stopwatch();
-
-  final _dbHelper = DatabaseHelper.instance;
+  late Future<List<Product>> _futureProducts;
+  late DatabaseService _databaseService;
+  late SearchLog _searchLog;
 
   @override
   void initState() {
@@ -59,279 +40,168 @@ class _PriceSearchState extends State<PriceSearch> {
     super.initState();
 
     _title = widget.title;
-    _referenceId = widget.referenceId;
+    _itemId = widget.itemId;
+    _databaseService = DatabaseService(uid: widget.uid);
+    _futureProducts = fetchRecommendations();
   }
 
   @override
   Widget build(BuildContext context) {
-    executeAfterBuild();
-
     return Scaffold(
-        appBar: AppBar(title: Text(_title)),
-        body: Column(
-          children: <Widget>[
-            Visibility(
-                visible: false,
-                maintainState: true,
-                child: SizedBox(
-                    height: 1,
-                    child: WebViewPlus(
-                      initialUrl: SafewayParser.getURL(_title),
-                      javascriptMode: JavascriptMode.unrestricted,
-                      onWebViewCreated: (controller) {
-                        this._controller = controller;
-                      },
-                      // onPageStarted: (url){
-                      //   stopWatch.start();
-                      // },
-                      onPageFinished: (url) {
-                        print('Page loaded: $url');
-                        // fetchSafewayData();
-                      },
-                    ))),
-            (_products == null)
-                ? Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: ListView.builder(
-                        itemCount: this._products.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Card(
-                            clipBehavior: Clip.antiAlias,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                FadeInImage.memoryNetwork(
-                                  height: 150,
-                                  width: 150,
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.centerLeft,
-                                  image: this._products[index].imageURL,
-                                  placeholder: kTransparentImage,
-                                ),
-                                Expanded(
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                      Text(this._products[index].name,
-                                          style: const TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 4),
-                                      Text(
-                                          "${this._products[index].store}  ${this._products[index].distance}",
-                                          style: const TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.grey)),
-                                      SizedBox(height: 8),
-                                      Text("\$ ${this._products[index].price}",
-                                          style: const TextStyle(
-                                              fontSize: 21,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold)),
-                                      IconButton(
-                                          icon: this._products[index].isDeleted
-                                              ? Icon(Icons.bookmark_border)
-                                              : Icon(Icons.bookmark),
-                                          onPressed: () {
-                                            if (this._products[index].isDeleted)
-                                              onPressAdd(index);
-                                            else
-                                              onPressDelete(index);
-                                          }),
-                                    ])),
-                              ],
-                            ),
-                          );
-                        })),
-          ],
-        ));
+      appBar: AppBar(
+          title: Text(_title),
+          leading: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                _databaseService.insertSearchLog(_searchLog);
+                Navigator.pop(context);
+              })),
+      body: FutureBuilder<List<Product>>(
+          future: _futureProducts,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            var products = snapshot.data ?? [];
+            if (products.length == 0) {
+              return Center(
+                child: Text("Failed to search. Please try again."),
+              );
+            }
+            return ListView.builder(
+                itemCount: products.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ProductCard(
+                      product: products[index],
+                      databaseService: _databaseService);
+                });
+          }),
+    );
   }
 
-  // void fetchSafewayData() async {
-  //   String docu = await this._controller.evaluateJavascript('document.documentElement.innerHTML');
-  //   var html = json.decode(docu);
-  //   var dom = parse(html);
-  //
-  //   var products = SafewayParser.collectProducts(dom);
-  //
-  //   print('safeway parser executed in ${stopWatch.elapsed}');
-  //
-  //   var lat = 47.690952;
-  //   var lng = -122.301245;
-  //   var places = await GoogleMapsService.getPlaces(lat, lng);
-  //   var dist = '';
-  //   for(var p in places){
-  //     if(p.name == 'Safeway'){
-  //        dist = await GoogleMapsService.getDistance(lat, lng, p.latitude, p.longitude);
-  //        break;
-  //     }
-  //   }
-  //
-  //   if(dist.isNotEmpty){
-  //     for(var p in products){
-  //       p.distance = dist;
-  //       print('${p.name}\t ${p.price} from ${p.store}\t${p.imageURL}\t${p.distance}');
-  //     }
-  //   }
-  //
-  //   setState(() {
-  //     _products.addAll(products);
-  //     _products.sort((a, b) => a.price.compareTo(b.price));
-  //   });
-  // }
+  Future<List<Product>> fetchRecommendations() async {
+    var saveProducts = await DatabaseService(uid: widget.uid).getAllProducts();
+    String userHistory = saveProducts.map((p) => p.name).join(",");
 
-  // Future<void> fetchKrogerData() async {
-  //   var kroger = KrogerParser();
-  //   var products = await kroger.fetch(_title);
-  //   for (var p in products) {
-  //     print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
-  //   }
-  //   setState(() {
-  //     _products.addAll(products);
-  //     _products.sort((a, b) => a.price.compareTo(b.price));
-  //   });
-  // }
-  //
-  // Future<void> fetchTargetData() async {
-  //   var target = TargetParser();
-  //   var products = await target.fetch(_title);
-  //   for (var p in products){
-  //     print('${p.name}\t ${p.price} from ${p.store}\t${p.distance}');
-  //   }
-  //   setState(() {
-  //     _products.addAll(products);
-  //     _products.sort((a, b) => a.price.compareTo(b.price));
-  //   });
-  // }
-  Future<void> fetchRecommendations() async {
-    var saved_products = await DatabaseService(uid: widget.uid).getAllProducts();
-    var user_detail_list = saved_products.map((p) => p.name);
-    var recommendations = await PriceComparisonEngineParser.fetch(
-        _title, user_detail_list.join(","));
-    for (var r in recommendations) {
-      for (var p in saved_products) {
+    List<int> rankingOfBookmarks = [];
+    var recommendations =
+        await PriceComparisonEngineParser.fetch(_title, userHistory, _itemId);
+    recommendations.asMap().forEach((index, r) {
+      for (var p in saveProducts) {
         if (r.name == p.name) {
           r.isDeleted = false;
           r.referenceId = p.referenceId;
+          rankingOfBookmarks.add(index);
         }
       }
-    }
-
-    setState(() {
-      _products = recommendations;
-    });
-  }
-
-  void executeAfterBuild() {
-    // if (!_isKrogerFetched) {
-    //   _isKrogerFetched = true;
-    //   fetchKrogerData();
-    // }
-    // if (! _isTargetFetched) {
-    //   _isTargetFetched = true;
-    //   fetchTargetData();
-    // }
-    if (!_isRecommendationFetched) {
-      _isRecommendationFetched = true;
-      fetchRecommendations();
-    }
-  }
-
-  void onPressAdd(int index) async {
-    // Check if the store is added.
-    String newStore = _products[index].store;
-    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
-        (defaultTargetPlatform == TargetPlatform.android)) {
-      if (await this._dbHelper.isStoreInProductTable(newStore)) {
-        print("[PriceSearch] The store: $newStore is in product table.");
-        newStore = "";
-      }
-    }
-
-    DocumentReference newDoc = await DatabaseService(uid: widget.uid)
-        .insertProduct(_products[index], this._referenceId);
-
-    setState(() {
-      _products[index].isDeleted = false;
-      _products[index].referenceId = newDoc.id;
     });
 
-    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
-        (defaultTargetPlatform == TargetPlatform.android)) {
-      if (newStore.isNotEmpty) {
-        Geofence.getCurrentLocation().then((coordinate) {
-          if (coordinate == null) {
-            print("[PriceSearch] Failed to get current location.");
-            return;
-          }
+    _searchLog = SearchLog(
+        queryString: _title,
+        userHistory: userHistory,
+        rankingOfBookmarks: rankingOfBookmarks,
+        time: DateTime.now().toUtc());
 
-          // Find nearby stores in 6 miles (10 min drive).
-          GoogleMapsService.getPlaces(
-                  coordinate!.latitude, coordinate!.longitude, newStore, 10000)
-              .then((places) {
-            // Add nearby stores to db and geofence
-            for (var p in places) {
-              this._dbHelper.insertStore(p).then((id) {
-                String locationId = '$newStore $id';
-                Geolocation location = Geolocation(
-                    latitude: p.latitude,
-                    longitude: p.longitude,
-                    radius: 500,
-                    id: locationId);
-                Geofence.addGeolocation(location, GeolocationEvent.entry)
-                    .then((onValue) {
-                  print(
-                      "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) succeeded");
-                }).catchError((onError) {
-                  print(
-                      "[PriceSearch] add geolocation: $locationId(${p.latitude},${p.longitude}) failed");
-                });
-              });
-            }
-          });
-        });
-      }
-    }
+    return recommendations;
+  }
+}
+
+class ProductCard extends StatefulWidget {
+  final Product product;
+  final DatabaseService databaseService;
+
+  const ProductCard(
+      {Key? key, required this.product, required this.databaseService})
+      : super(key: key);
+
+  @override
+  ProductCardState createState() => ProductCardState();
+}
+
+class ProductCardState extends State<ProductCard> {
+  late bool _isBookmarked;
+  String? _productId;
+
+  @override
+  void initState() {
+    super.initState();
+    _isBookmarked = !widget.product.isDeleted;
+    _productId = widget.product.referenceId;
   }
 
-  void onPressDelete(int index) async {
-    await DatabaseService(uid: widget.uid).deleteProduct(_products[index]);
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          FadeInImage.memoryNetwork(
+            height: 150,
+            width: 150,
+            fit: BoxFit.contain,
+            alignment: Alignment.centerLeft,
+            image: widget.product.imageURL,
+            placeholder: kTransparentImage,
+          ),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                Text(widget.product.name,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text("${widget.product.store}  ${widget.product.distance}",
+                    style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                SizedBox(height: 8),
+                Text("\$ ${widget.product.price}",
+                    style: const TextStyle(
+                        fontSize: 21,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold)),
+                IconButton(
+                    icon: _isBookmarked
+                        ? Icon(Icons.bookmark)
+                        : Icon(Icons.bookmark_border),
+                    onPressed: () {
+                      if (_isBookmarked)
+                        onPressDelete();
+                      else
+                        onPressAdd();
+                    }),
+              ])),
+        ],
+      ),
+    );
+  }
+
+  void onPressAdd() async {
+    //TODO: Check if the store is added.
+
+    DocumentReference newDoc =
+        await widget.databaseService.insertProduct(widget.product);
 
     setState(() {
-      _products[index].isDeleted = true;
+      _isBookmarked = true;
+      _productId = newDoc.id;
     });
 
-    if ((defaultTargetPlatform == TargetPlatform.iOS) ||
-        (defaultTargetPlatform == TargetPlatform.android)) {
-      // Check if the store should be deleted.
-      if (!await this._dbHelper.isStoreInProductTable(_products[index].store)) {
-        // Remove all stores from geofence.
-        Geofence.removeAllGeolocations();
-        this
-            ._dbHelper
-            .deleteStoresByName(_products[index].store)
-            .then((onValue) {
-          // Iterate over the remaining stores and add them to geofence.
-          this._dbHelper.getAllStores().then((stores) {
-            for (var store in stores) {
-              Geolocation location = Geolocation(
-                  latitude: store.latitude,
-                  longitude: store.longitude,
-                  radius: 500,
-                  id: store.placeId);
-              Geofence.addGeolocation(location, GeolocationEvent.entry)
-                  .then((onValue) {
-                print(
-                    "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) succeeded.");
-              }).catchError((onError) {
-                print(
-                    "[PriceSearch] add geolocation: ${store.placeId}(${store.latitude},${store.longitude}) failed.");
-              });
-            }
-          });
-        });
-      }
-    }
+    //TODO: Find nearby stores in 6 miles (10 min drive).
+    //TODO: Add nearby stores to db and geofence.
+  }
+
+  void onPressDelete() async {
+    if (_productId != null)
+      await widget.databaseService.deleteProduct(_productId!);
+
+    setState(() {
+      _isBookmarked = false;
+      _productId = null;
+    });
+
+    //TODO: Check if the store should be deleted.
+    //TODO: Remove all stores from geofence.
+    //TODO: Iterate over the remaining stores and add them to geofence.
   }
 }

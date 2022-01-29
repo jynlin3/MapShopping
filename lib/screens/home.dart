@@ -77,11 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     key: Key(this._items[index].title),
                     child: Card(
                         child: ListTile(
-                      leading: Checkbox(
-                          value: this._items[index].isChecked,
-                          onChanged: (newValue) {
-                            onClickCheckbox(this._items[index], newValue);
-                          }),
+                      // Note: Disable checkbox for user testing.
+                      // leading: Checkbox(
+                      //     value: this._items[index].isChecked,
+                      //     onChanged: (newValue) {
+                      //       onClickCheckbox(this._items[index], newValue);
+                      //     }),
                       title: Text(this._items[index].title,
                           style: TextStyle(
                               decoration: this._items[index].isChecked
@@ -90,19 +91,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       trailing: Row(children: <Widget>[
                         IconButton(
                             icon: Icon(Icons.search),
-                            onPressed: () {
+                            onPressed: () async {
                               String referenceId =
-                                  this._items[index].referenceId == null
-                                      ? ""
-                                      : this._items[index].referenceId!;
+                                  this._items[index].referenceId ?? "";
 
-                              Navigator.push(
+                              await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => PriceSearch(
                                           title: this._items[index].title,
-                                          referenceId: referenceId,
+                                          itemId: referenceId,
                                           uid: widget.uid)));
+
+                              // Refresh bookmark list.
+                              setupList();
                             }),
                         IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
@@ -335,7 +337,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await DatabaseService(uid: widget.uid).updateItem(item);
     await DatabaseService(uid: widget.uid).updateProductsByItemId(
         item.referenceId == null ? "" : item.referenceId!,
-        {columnIsDeleted: isChecked! ? 1 : 0});
+        {columnIsDeleted: isChecked ? 1 : 0});
 
     // Update UI
     setupList();
