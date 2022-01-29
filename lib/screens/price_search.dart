@@ -72,8 +72,19 @@ class _PriceSearchState extends State<PriceSearch> {
                 itemCount: products.length,
                 itemBuilder: (BuildContext context, int index) {
                   return ProductCard(
-                      product: products[index],
-                      databaseService: _databaseService);
+                    product: products[index],
+                    databaseService: _databaseService,
+                    onBookmarked: () {
+                      setState(() {
+                        _searchLog.rankingOfBookmarks.add(index);
+                      });
+                    },
+                    onUnbookmarked: () {
+                      setState(() {
+                        _searchLog.rankingOfBookmarks.remove(index);
+                      });
+                    },
+                  );
                 });
           }),
     );
@@ -100,6 +111,7 @@ class _PriceSearchState extends State<PriceSearch> {
         queryString: _title,
         userHistory: userHistory,
         rankingOfBookmarks: rankingOfBookmarks,
+        results: recommendations,
         time: DateTime.now().toUtc());
 
     return recommendations;
@@ -110,8 +122,15 @@ class ProductCard extends StatefulWidget {
   final Product product;
   final DatabaseService databaseService;
 
+  final VoidCallback onBookmarked;
+  final VoidCallback onUnbookmarked;
+
   const ProductCard(
-      {Key? key, required this.product, required this.databaseService})
+      {Key? key,
+      required this.product,
+      required this.databaseService,
+      required this.onBookmarked,
+      required this.onUnbookmarked})
       : super(key: key);
 
   @override
@@ -189,6 +208,8 @@ class ProductCardState extends State<ProductCard> {
 
     //TODO: Find nearby stores in 6 miles (10 min drive).
     //TODO: Add nearby stores to db and geofence.
+
+    widget.onBookmarked();
   }
 
   void onPressDelete() async {
@@ -203,5 +224,7 @@ class ProductCardState extends State<ProductCard> {
     //TODO: Check if the store should be deleted.
     //TODO: Remove all stores from geofence.
     //TODO: Iterate over the remaining stores and add them to geofence.
+
+    widget.onUnbookmarked();
   }
 }

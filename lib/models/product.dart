@@ -11,7 +11,7 @@ class Product {
   String itemId;
   String distance = "";
   int id = -1;
-  bool isDeleted = true
+  bool isDeleted = true;
 
   String? referenceId;
 
