@@ -15,9 +15,10 @@ class PriceSearch extends StatefulWidget {
   final String title;
   final String itemId;
   final String uid;
+  final int week;
 
   const PriceSearch(
-      {Key? key, required this.title, required this.itemId, required this.uid})
+      {Key? key, required this.title, required this.itemId, required this.uid, required this.week})
       : super(key: key);
 
   @override
@@ -112,7 +113,8 @@ class _PriceSearchState extends State<PriceSearch> {
         userHistory: userHistory,
         rankingOfBookmarks: rankingOfBookmarks,
         results: recommendations,
-        time: DateTime.now().toUtc());
+        time: DateTime.now().toUtc(),
+        week: widget.week);
 
     return recommendations;
   }

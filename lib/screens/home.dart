@@ -15,7 +15,9 @@ import '../models/item.dart';
 import '../models/product.dart';
 import '../services/firestore.dart';
 import '../services/googlemaps.dart';
+import 'custom_icons_icons.dart';
 import 'price_search.dart';
+
 
 class MyHomePage extends StatefulWidget {
   final String uid;
@@ -45,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
       new FlutterLocalNotificationsPlugin();
 
   List<Product> _products = [];
+  int _week = 0;
 
   @override
   void initState() {
@@ -64,6 +67,17 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Map Shopping'),
+        actions: [
+          IconButton(
+            icon: const Icon(CustomIcons.next_week),
+            tooltip: 'Next week',
+            onPressed: () {
+              setState(() {
+                _week += 1;
+              });
+            },
+          )
+        ],
       ),
       body: PageView(
         children: <Widget>[
@@ -101,7 +115,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       builder: (context) => PriceSearch(
                                           title: this._items[index].title,
                                           itemId: referenceId,
-                                          uid: widget.uid)));
+                                          uid: widget.uid,
+                                          week: _week)));
 
                               // Refresh bookmark list.
                               setupList();
@@ -243,7 +258,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                         actions: <Widget>[
-                          FlatButton(onPressed: onPressAdd, child: Text('Add'))
+                          TextButton(onPressed: onPressAdd, child: Text('Add'))
                         ],
                       );
                     });
