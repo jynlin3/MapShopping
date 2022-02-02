@@ -18,7 +18,11 @@ class PriceSearch extends StatefulWidget {
   final int week;
 
   const PriceSearch(
-      {Key? key, required this.title, required this.itemId, required this.uid, required this.week})
+      {Key? key,
+      required this.title,
+      required this.itemId,
+      required this.uid,
+      required this.week})
       : super(key: key);
 
   @override
@@ -158,8 +162,8 @@ class ProductCardState extends State<ProductCard> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           FadeInImage.memoryNetwork(
-            height: 150,
-            width: 150,
+            height: 100,
+            width: 100,
             fit: BoxFit.contain,
             alignment: Alignment.centerLeft,
             image: widget.product.imageURL,
@@ -176,21 +180,24 @@ class ProductCardState extends State<ProductCard> {
                 Text("${widget.product.store}  ${widget.product.distance}",
                     style: const TextStyle(fontSize: 13, color: Colors.grey)),
                 SizedBox(height: 8),
-                Text("\$ ${widget.product.price}",
-                    style: const TextStyle(
-                        fontSize: 21,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold)),
-                IconButton(
-                    icon: _isBookmarked
-                        ? Icon(Icons.bookmark)
-                        : Icon(Icons.bookmark_border),
-                    onPressed: () {
-                      if (_isBookmarked)
-                        onPressDelete();
-                      else
-                        onPressAdd();
-                    }),
+                Row(
+                    children: [
+                      Text("\$ ${widget.product.price}",
+                          style: const TextStyle(
+                              fontSize: 21,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
+                      IconButton(
+                          icon: _isBookmarked
+                              ? Icon(Icons.bookmark)
+                              : Icon(Icons.bookmark_border),
+                          onPressed: () {
+                            if (_isBookmarked)
+                              onPressDelete();
+                            else
+                              onPressAdd();
+                          }),
+                    ]),
               ])),
         ],
       ),
