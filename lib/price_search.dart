@@ -90,8 +90,8 @@ class _PriceSearchState extends State<PriceSearch> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 FadeInImage.memoryNetwork(
-                                  height: 150,
-                                  width: 150,
+                                  height: 100,
+                                  width: 100,
                                   fit: BoxFit.contain,
                                   alignment: Alignment.centerLeft,
                                   image: this._products[index].imageURL,
@@ -113,21 +113,30 @@ class _PriceSearchState extends State<PriceSearch> {
                                               fontSize: 13,
                                               color: Colors.grey)),
                                       SizedBox(height: 8),
-                                      Text("\$ ${this._products[index].price}",
-                                          style: const TextStyle(
-                                              fontSize: 21,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold)),
-                                      IconButton(
-                                          icon: this._products[index].isDeleted
-                                              ? Icon(Icons.bookmark_border)
-                                              : Icon(Icons.bookmark),
-                                          onPressed: () {
-                                            if (this._products[index].isDeleted)
-                                              onPressAdd(index);
-                                            else
-                                              onPressDelete(index);
-                                          }),
+                                      Row(
+                                        children: [
+                                          Text(
+                                              "\$ ${this._products[index].price}",
+                                              style: const TextStyle(
+                                                  fontSize: 21,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold)),
+                                          IconButton(
+                                              icon: this
+                                                      ._products[index]
+                                                      .isDeleted
+                                                  ? Icon(Icons.bookmark_border)
+                                                  : Icon(Icons.bookmark),
+                                              onPressed: () {
+                                                if (this
+                                                    ._products[index]
+                                                    .isDeleted)
+                                                  onPressAdd(index);
+                                                else
+                                                  onPressDelete(index);
+                                              }),
+                                        ],
+                                      ),
                                     ])),
                               ],
                             ),
