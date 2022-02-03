@@ -29,7 +29,7 @@ class SearchLog {
     return {
       columnQueryString: queryString,
       columnUserHistory: userHistory,
-      columnRankingOfBookmarks: rankingOfBookmarks.join(', '),
+      columnRankingOfBookmarks: rankingOfBookmarks,
       columnResults: results.map((p) => p.name).toList(),
       columnTime: time,
       columnWeek: week

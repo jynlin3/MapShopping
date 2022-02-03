@@ -97,7 +97,7 @@ class _PriceSearchState extends State<PriceSearch> {
 
   Future<List<Product>> fetchRecommendations() async {
     var saveProducts = await DatabaseService(uid: widget.uid).getAllProducts();
-    String userHistory = saveProducts.map((p) => p.name).join(",");
+    String userHistory = saveProducts.map((p) => p.name).join("|");
 
     List<int> rankingOfBookmarks = [];
     var recommendations =
