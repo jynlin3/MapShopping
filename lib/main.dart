@@ -86,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
       new FlutterLocalNotificationsPlugin();
 
   List<Product> _products = [];
+  List<Product> _currentProdcuts = [];
 
   @override
   void initState() {
@@ -221,20 +222,10 @@ class _MyHomePageState extends State<MyHomePage> {
           // settings page
           Center(child: Text('Settings')),
           // navigation map page
-          GoogleMap(
-              onMapCreated: (controller) {
-                this._mapController = controller;
-                _checkLocationPermission().then((status) {
-                  debugPrint('----- Geolocation Status: ${status}');
-                });
-                _animateToUser();
-              },
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 11.0,
-              ),
-              markers: _markers,
-              myLocationEnabled: true)
+          Stack(children: <Widget>[
+            _buildGoogleMap(context),
+            _buildContainer(),
+          ])
         ],
         controller: _pageController,
         onPageChanged: (index) {
@@ -400,12 +391,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
     var markers = <Marker>[];
     places.forEach((place) {
+      if (!place.name.contains('Target') && !place.name.contains('QFC')) return;
       Marker marker = Marker(
           markerId: MarkerId(place.placeId),
           draggable: false,
           icon: BitmapDescriptor.defaultMarker,
           infoWindow: InfoWindow(title: place.name),
-          position: LatLng(place.latitude, place.longitude));
+          position: LatLng(place.latitude, place.longitude),
+          onTap: () {
+            List<Product> currentProducts = [];
+            var stores = ['Target', 'QFC'];
+            for (var store in stores) {
+              if (place.name.contains(store)) {
+                currentProducts =
+                    _products.where((p) => p.store == 'Target').toList();
+                break;
+              }
+            }
+            setState(() {
+              this._currentProdcuts = currentProducts;
+            });
+          });
 
       markers.add(marker);
     });
@@ -461,5 +467,75 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<dynamic> onSelectNotification(String? payload) async {
     this._pageController.animateToPage(1,
         duration: Duration(milliseconds: 1), curve: Curves.easeIn);
+  }
+
+  Widget _buildGoogleMap(BuildContext context) {
+    return Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: GoogleMap(
+          onMapCreated: (controller) {
+            this._mapController = controller;
+            _checkLocationPermission().then((status) {
+              debugPrint('----- Geolocation Status: ${status}');
+            });
+            _animateToUser();
+          },
+          initialCameraPosition: CameraPosition(
+            target: _center,
+            zoom: 11.0,
+          ),
+          markers: _markers,
+          myLocationEnabled: true,
+        ));
+  }
+
+  Widget _boxes(String _image, String name) {
+    return Container(
+      child: new FittedBox(
+        child: Material(
+            color: Colors.white,
+            elevation: 14.0,
+            shadowColor: Color(0x802196F3),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Container(
+                  width: 270,
+                  height: 300,
+                  child: Image(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    image: NetworkImage(_image),
+                  ),
+                ),
+                Container(
+                    width: 270,
+                    child: Text(name,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)))
+              ],
+            )),
+      ),
+    );
+  }
+
+  Widget _buildContainer() {
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Container(
+          margin: EdgeInsets.symmetric(vertical: 20.0),
+          height: 180.0,
+          child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: this._currentProdcuts.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _boxes(this._currentProdcuts[index].imageURL,
+                      this._currentProdcuts[index].name),
+                );
+              })),
+    );
   }
 }
