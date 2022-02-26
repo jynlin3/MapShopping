@@ -90,8 +90,8 @@ class _PriceSearchState extends State<PriceSearch> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 FadeInImage.memoryNetwork(
-                                  height: 100,
-                                  width: 100,
+                                  height: 120,
+                                  width: 120,
                                   fit: BoxFit.contain,
                                   alignment: Alignment.centerLeft,
                                   image: this._products[index].imageURL,

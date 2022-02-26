@@ -189,8 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       FadeInImage.memoryNetwork(
-                        height: 150,
-                        width: 150,
+                        height: 120,
+                        width: 120,
                         fit: BoxFit.contain,
                         alignment: Alignment.centerLeft,
                         image: this._products[index].imageURL,
